@@ -1,0 +1,96 @@
+# Example for ~/.zshrc.local — machine-local settings and secrets.
+#
+# Copy to ~/.zshrc.local (NOT into this repo) and chmod 600:
+#
+#     cp zsh/zshrc.local.example ~/.zshrc.local
+#     chmod 600 ~/.zshrc.local
+#
+# ~/.zshrc.local is sourced last by .zshrc and lives in $HOME, outside the
+# repo, so it is never part of a commit. This file — the .example — is tracked
+# and must therefore contain no real values.
+#
+# ---------------------------------------------------------------------------
+# Read this before pasting an AWS key in here
+# ---------------------------------------------------------------------------
+#
+# Exporting AWS_SECRET_ACCESS_KEY works, but it is the weakest of the options
+# below, for reasons that have nothing to do with git:
+#
+#   * every process you launch inherits it, including any npm/pip postinstall
+#     script and anything that shells out
+#   * it appears in `/proc/<pid>/environ`, readable by your own user, so any
+#     compromised process can read it
+#   * long-lived keys do not rotate and do not expire
+#   * it is one careless `env > debug.txt` away from a bug report
+#
+# Prefer, in order:
+#
+#   1. AWS SSO / IAM Identity Center  — short-lived, nothing static on disk
+#   2. aws-vault                      — keys in the system keyring, never
+#                                       plaintext; exports temporary creds
+#   3. ~/.aws/credentials + profiles  — still plaintext, but confined to one
+#                                       0600 file instead of every process
+#   4. exported env vars              — last resort
+#
+# Only AWS_PROFILE and AWS_REGION belong in a shell rc. Those are not secrets.
+
+
+# ---------------------------------------------------------------------------
+# 1. AWS SSO  (best — no long-lived credentials anywhere)
+# ---------------------------------------------------------------------------
+# Configure once with:  aws configure sso
+# Then log in with:     aws sso login --profile work
+#
+# export AWS_PROFILE=work
+# export AWS_REGION=ap-southeast-1
+
+
+# ---------------------------------------------------------------------------
+# 2. aws-vault  (keys encrypted in the system keyring)
+# ---------------------------------------------------------------------------
+# Store a key once, then never type or paste it again:
+#     aws-vault add work
+# Run a command with temporary credentials:
+#     aws-vault exec work -- terraform plan
+#
+# export AWS_VAULT_BACKEND=secret-service   # gnome-keyring / KDE wallet
+# export AWS_SESSION_TOKEN_TTL=8h
+#
+# Handy wrapper: `av work terraform plan`
+# av() { aws-vault exec "$1" -- "${@:2}" }
+
+
+# ---------------------------------------------------------------------------
+# 3. Profiles in ~/.aws/credentials  (chmod 600)
+# ---------------------------------------------------------------------------
+# The profile NAME is not a secret — only the file's contents are. So this
+# line is safe even in a committed file:
+#
+# export AWS_PROFILE=work
+# export AWS_REGION=ap-southeast-1
+#
+# ~/.aws/credentials then holds:
+#     [work]
+#     aws_access_key_id     = AKIA...
+#     aws_secret_access_key = ...
+
+
+# ---------------------------------------------------------------------------
+# 4. Raw exports  (last resort — see the warning above)
+# ---------------------------------------------------------------------------
+# export AWS_ACCESS_KEY_ID="REPLACE_ME"
+# export AWS_SECRET_ACCESS_KEY="REPLACE_ME"
+
+
+# ---------------------------------------------------------------------------
+# Other things that belong here rather than in the repo
+# ---------------------------------------------------------------------------
+# export GITHUB_TOKEN="..."
+# export GITLAB_TOKEN="..."
+# export CLOUDFLARE_API_TOKEN="..."
+# export TF_VAR_db_password="..."
+# export KUBECONFIG="$HOME/.kube/config:$HOME/.kube/work.yaml"
+#
+# Work proxies, private hosts, machine-specific PATH additions:
+# export HTTP_PROXY="http://proxy.internal:3128"
+# path=("$HOME/work/bin" $path)

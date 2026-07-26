@@ -189,6 +189,58 @@ you rarely need it by hand — mostly after a fresh install.
 
 ---
 
+## Secrets and environment variables
+
+**Never put a credential in `~/.zshrc`.** It is a symlink into this repo, so
+anything you add there is committed.
+
+Put it in **`~/.zshrc.local`** instead. It lives in `$HOME`, outside the repo,
+and `.zshrc` sources it last:
+
+```bash
+cp zsh/zshrc.local.example ~/.zshrc.local
+chmod 600 ~/.zshrc.local
+$EDITOR ~/.zshrc.local
+```
+
+### For AWS specifically, prefer not to export keys at all
+
+Exporting `AWS_SECRET_ACCESS_KEY` keeps it out of git, but git is not the only
+way a key leaks. Every process you launch inherits it — including npm/pip
+postinstall scripts — and it sits readable in `/proc/<pid>/environ`. Long-lived
+keys also never expire.
+
+In order of preference:
+
+| Approach | Why |
+| --- | --- |
+| **AWS SSO** — `aws configure sso`, then `aws sso login --profile work` | short-lived creds, nothing static on disk |
+| **aws-vault** — `aws-vault add work`, `aws-vault exec work -- terraform plan` | keys in the system keyring, never plaintext |
+| **`~/.aws/credentials`** + `export AWS_PROFILE=work` | still plaintext, but confined to one `0600` file |
+| raw `export AWS_SECRET_ACCESS_KEY=…` | last resort |
+
+`AWS_PROFILE` and `AWS_REGION` are **not** secrets — the profile name is just a
+label. Those are safe to set anywhere, including a committed file.
+
+`aws-vault`, `pass`, `gopass` and `keepassxc` are all in the official repos.
+
+### Per-project variables
+
+`direnv` is already hooked into the shell. Put an `.envrc` in a project
+directory and it loads on `cd` and unloads on exit:
+
+```bash
+echo 'export AWS_PROFILE=work' > .envrc
+echo 'export KUBECONFIG=$PWD/kubeconfig' >> .envrc
+direnv allow
+```
+
+Keep `.envrc` to *profile names and paths*, not keys — it is a file in a project
+directory and those get committed by accident. `.gitignore` here covers `.env`,
+`.envrc` is on you.
+
+---
+
 ## Editing these dotfiles
 
 The configs are **symlinked** into `~/.config`, so editing
