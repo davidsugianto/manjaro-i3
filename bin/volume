@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Volume control with an on-screen notification.
+#
+# Talks to pipewire-pulse via pactl. The notification reuses one dunst slot
+# (see the "volume" stack tag in dunstrc) so holding the key down updates a
+# single popup instead of spamming a column of them.
+set -euo pipefail
+
+SINK="@DEFAULT_SINK@"
+SOURCE="@DEFAULT_SOURCE@"
+STEP="${VOLUME_STEP:-5}"
+MAX=150   # allow a bit of boost, but stop well short of clipping
+
+notify() {
+    # -h string:x-dunst-stack-tag:volume replaces the previous popup
+    # -h int:value:N draws dunst's progress bar
+    notify-send \
+        -a "volume" \
+        -u low \
+        -t 1500 \
+        -h "string:x-dunst-stack-tag:volume" \
+        -h "int:value:$2" \
+        -i "$3" \
+        "$1"
+}
+
+current() {
+    pactl get-sink-volume "$SINK" | awk 'NR==1{gsub(/%/,"");print $5;exit}'
+}
+
+muted() {
+    [[ "$(pactl get-sink-mute "$SINK" | awk '{print $2}')" == "yes" ]]
+}
+
+icon_for() {
+    local v=$1
+    if   (( v == 0 )); then echo "audio-volume-muted"
+    elif (( v < 34 )); then echo "audio-volume-low"
+    elif (( v < 67 )); then echo "audio-volume-medium"
+    else                    echo "audio-volume-high"
+    fi
+}
+
+case "${1:-}" in
+    up)
+        pactl set-sink-mute "$SINK" 0
+        pactl set-sink-volume "$SINK" "+${STEP}%"
+        # Clamp: pactl has no built-in ceiling, so walk it back if we overshot.
+        v=$(current)
+        (( v > MAX )) && pactl set-sink-volume "$SINK" "${MAX}%" && v=$MAX
+        notify "Volume  ${v}%" "$v" "$(icon_for "$v")"
+        ;;
+    down)
+        pactl set-sink-mute "$SINK" 0
+        pactl set-sink-volume "$SINK" "-${STEP}%"
+        v=$(current)
+        notify "Volume  ${v}%" "$v" "$(icon_for "$v")"
+        ;;
+    set)
+        pactl set-sink-volume "$SINK" "${2:?usage: volume set <percent>}%"
+        v=$(current)
+        notify "Volume  ${v}%" "$v" "$(icon_for "$v")"
+        ;;
+    mute|toggle)
+        pactl set-sink-mute "$SINK" toggle
+        if muted; then
+            notify "Volume  muted" 0 "audio-volume-muted"
+        else
+            v=$(current)
+            notify "Volume  ${v}%" "$v" "$(icon_for "$v")"
+        fi
+        ;;
+    micmute)
+        pactl set-source-mute "$SOURCE" toggle
+        if [[ "$(pactl get-source-mute "$SOURCE" | awk '{print $2}')" == "yes" ]]; then
+            notify-send -a volume -u low -t 1500 \
+                -h "string:x-dunst-stack-tag:volume" \
+                -i microphone-sensitivity-muted "Microphone  muted"
+        else
+            notify-send -a volume -u low -t 1500 \
+                -h "string:x-dunst-stack-tag:volume" \
+                -i microphone-sensitivity-high "Microphone  live"
+        fi
+        ;;
+    get)
+        muted && echo "muted" || current
+        ;;
+    *)
+        echo "usage: volume {up|down|set <n>|mute|micmute|get}" >&2
+        exit 1
+        ;;
+esac

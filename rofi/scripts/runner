@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Raw command runner ($mod+Shift+d) — anything on $PATH, not just .desktop files.
+# Shift+Return runs the entry in a terminal.
+exec rofi -show run -theme "$HOME/.config/rofi/themes/menu.rasi"

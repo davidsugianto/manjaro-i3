@@ -1,0 +1,369 @@
+# ~/.config/i3/config — i3 4.25
+#
+# Layout of this file:
+#   1. basics        2. autostart      3. keybindings    4. workspaces
+#   5. laptop keys   6. modes          7. appearance     8. window rules
+#
+# Reload after edits with $mod+Shift+c, restart in place with $mod+Shift+r.
+# Note: this file lives at ~/.config/i3/config, which i3 reads *before*
+# Manjaro's stock ~/.i3/config. install.sh moves the old one out of the way.
+
+set $mod Mod4
+set $alt Mod1
+
+# Preferred applications — change these once and the binds follow.
+set $term       wezterm
+set $term_alt   xterm
+set $browser    google-chrome-stable
+set $files      thunar
+set $editor     $term start -- nvim
+set $music      $term start --class music -- ncmpcpp
+set $images     nsxiv
+
+font pango:JetBrainsMono Nerd Font 10
+
+# Use Mouse+$mod to drag floating windows.
+floating_modifier $mod
+# Drag/resize any window with the mouse without aiming at the border.
+tiling_drag modifier titlebar
+
+# Focus follows the mouse only when it actually moves — stops the pointer
+# from stealing focus when a new window opens under it.
+focus_follows_mouse yes
+mouse_warping none
+
+# ---------------------------------------------------------------------------
+# 2. autostart
+# ---------------------------------------------------------------------------
+
+# Compositor: shadows + fade, keeps the desktop feeling smooth.
+exec_always --no-startup-id ~/.config/i3/scripts/restart-picom.sh
+
+# Status bar.
+exec_always --no-startup-id ~/.config/polybar/launch.sh
+
+# Notifications.
+exec_always --no-startup-id ~/.config/i3/scripts/restart-dunst.sh
+
+# Wallpaper (falls back to a flat TokyoNight background if none is set).
+exec_always --no-startup-id ~/.local/bin/set-wallpaper
+
+# Automatic split direction — new windows split the wider axis, so you get
+# sensible layouts without ever pressing the split keys.
+exec_always --no-startup-id autotiling
+
+# Load Xresources so xterm, DPI and cursor settings apply.
+exec_always --no-startup-id xrdb -merge ~/.Xresources
+
+# Root-window cursor. Without this the pointer over the bare desktop stays the
+# default X11 "X" shape, even when every application shows the right cursor.
+exec_always --no-startup-id xsetroot -xcf /usr/share/icons/breeze-cursors/cursors/left_ptr 24
+
+# Applets and one-shot session setup.
+#
+# nm-applet / blueman-applet / pamac-tray are deliberately NOT started. Each
+# drew a full-colour GTK tray icon that clashed with the Nerd Font glyphs in
+# polybar, and each is now covered by a native module:
+#
+#   nm-applet     -> [module/wlan]      + rofi/scripts/wifi  ($mod-click the bar)
+#   blueman-applet-> [module/bluetooth] + blueman-manager on click
+#   pamac-tray    -> [module/updates]   + pamac-manager on click
+#
+# They are also blocked in ~/.config/autostart (see x11/autostart/), because
+# they ship XDG autostart entries that `dex` would otherwise launch.
+exec --no-startup-id numlockx on
+exec --no-startup-id dex --autostart --environment i3
+
+# Polkit authentication agent. Nothing else in an i3 session provides one, so
+# without this any GUI that needs elevated rights (pamac-manager installing
+# updates, gparted, blueman changing adapter settings) silently fails to
+# prompt. Manjaro's other editions get this from their desktop shell.
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+
+# Lock on suspend and after 10 minutes idle.
+exec --no-startup-id xss-lock --transfer-sleep-lock -- ~/.local/bin/lock
+exec --no-startup-id xset s 600 600
+
+# Touchpad/mouse tuning that has to happen per-session (see x11/ for the
+# system-wide half).
+exec_always --no-startup-id ~/.local/bin/input-setup
+
+# ---------------------------------------------------------------------------
+# 3. keybindings
+# ---------------------------------------------------------------------------
+
+# --- launching -------------------------------------------------------------
+bindsym $mod+Return         exec --no-startup-id $term
+bindsym $mod+Shift+Return   exec --no-startup-id $term_alt
+bindsym $mod+w              exec --no-startup-id $browser
+bindsym $mod+n              exec --no-startup-id $files
+bindsym $mod+c              exec --no-startup-id $editor
+bindsym $mod+m              exec --no-startup-id $music
+
+# Launcher, window switcher, clipboard, emoji, calculator.
+bindsym $mod+d              exec --no-startup-id ~/.config/rofi/scripts/launcher
+bindsym $mod+Tab            exec --no-startup-id ~/.config/rofi/scripts/windows
+bindsym $mod+Shift+d        exec --no-startup-id ~/.config/rofi/scripts/runner
+bindsym $mod+period         exec --no-startup-id ~/.config/rofi/scripts/emoji
+bindsym $mod+equal          exec --no-startup-id ~/.config/rofi/scripts/calc
+bindsym $mod+Shift+e        exec --no-startup-id ~/.config/rofi/scripts/powermenu
+# Wi-Fi picker. Also on a left click of the polybar network module, but a
+# keybinding is discoverable from the cheatsheet and a click target isn't.
+bindsym $mod+Shift+w        exec --no-startup-id ~/.config/rofi/scripts/wifi
+# Cheatsheet — parsed live from this file, so it never goes stale.
+bindsym $mod+Shift+slash    exec --no-startup-id ~/.config/rofi/scripts/keybinds
+
+# --- window management -----------------------------------------------------
+bindsym $mod+q              kill
+# Force-kill: turns the pointer into a crosshair, click the window to kill its
+# process. For when an app stops responding to a polite close request.
+# (i3 has no %id substitution — that's a sway extension — so this is plain xkill.)
+bindsym $mod+Shift+q        exec --no-startup-id xkill
+
+# Focus. Vim keys and arrows both work.
+bindsym $mod+h              focus left
+bindsym $mod+j              focus down
+bindsym $mod+k              focus up
+bindsym $mod+l              focus right
+bindsym $mod+Left           focus left
+bindsym $mod+Down           focus down
+bindsym $mod+Up             focus up
+bindsym $mod+Right          focus right
+
+# Move.
+bindsym $mod+Shift+h        move left  30px
+bindsym $mod+Shift+j        move down  30px
+bindsym $mod+Shift+k        move up    30px
+bindsym $mod+Shift+l        move right 30px
+bindsym $mod+Shift+Left     move left  30px
+bindsym $mod+Shift+Down     move down  30px
+bindsym $mod+Shift+Up       move up    30px
+bindsym $mod+Shift+Right    move right 30px
+
+# Split orientation (autotiling handles this for you, these are the override).
+bindsym $mod+b              split h
+bindsym $mod+v              split v
+
+# Layout.
+bindsym $mod+f              fullscreen toggle
+bindsym $mod+s              layout stacking
+bindsym $mod+t              layout tabbed
+bindsym $mod+e              layout toggle split
+bindsym $mod+Shift+space    floating toggle
+bindsym $mod+space          focus mode_toggle
+bindsym $mod+a              focus parent
+bindsym $mod+Shift+a        focus child
+
+# Scratchpad — a terminal you can summon anywhere.
+bindsym $mod+Shift+minus    move scratchpad
+bindsym $mod+minus          scratchpad show
+for_window [class="^scratch$"] move scratchpad, resize set 1100 600
+exec --no-startup-id $term start --class scratch
+
+# Session.
+bindsym $mod+Shift+c        reload
+bindsym $mod+Shift+r        restart
+bindsym $mod+Shift+x        exec --no-startup-id ~/.local/bin/lock
+
+# --- screenshots -----------------------------------------------------------
+# Print          → whole screen to clipboard + ~/Pictures/Screenshots
+# Shift+Print    → select a region
+# Ctrl+Print     → active window
+bindsym Print               exec --no-startup-id ~/.local/bin/screenshot full
+bindsym Shift+Print         exec --no-startup-id ~/.local/bin/screenshot area
+bindsym Ctrl+Print          exec --no-startup-id ~/.local/bin/screenshot window
+
+# ---------------------------------------------------------------------------
+# 4. workspaces
+# ---------------------------------------------------------------------------
+
+# Plain, readable names. polybar strips the "N:" and maps the remainder to a
+# glyph (see polybar/modules/i3.ini) — so i3 stays legible in `i3-msg` output
+# and the bar still shows icons. Keep the two lists in sync if you rename.
+set $ws1  "1:term"
+set $ws2  "2:code"
+set $ws3  "3:web"
+set $ws4  "4:files"
+set $ws5  "5:music"
+set $ws6  "6:media"
+set $ws7  "7:chat"
+set $ws8  "8:docs"
+set $ws9  "9:misc"
+set $ws10 "10:sys"
+
+bindsym $mod+1 workspace number $ws1
+bindsym $mod+2 workspace number $ws2
+bindsym $mod+3 workspace number $ws3
+bindsym $mod+4 workspace number $ws4
+bindsym $mod+5 workspace number $ws5
+bindsym $mod+6 workspace number $ws6
+bindsym $mod+7 workspace number $ws7
+bindsym $mod+8 workspace number $ws8
+bindsym $mod+9 workspace number $ws9
+bindsym $mod+0 workspace number $ws10
+
+bindsym $mod+Shift+1 move container to workspace number $ws1
+bindsym $mod+Shift+2 move container to workspace number $ws2
+bindsym $mod+Shift+3 move container to workspace number $ws3
+bindsym $mod+Shift+4 move container to workspace number $ws4
+bindsym $mod+Shift+5 move container to workspace number $ws5
+bindsym $mod+Shift+6 move container to workspace number $ws6
+bindsym $mod+Shift+7 move container to workspace number $ws7
+bindsym $mod+Shift+8 move container to workspace number $ws8
+bindsym $mod+Shift+9 move container to workspace number $ws9
+bindsym $mod+Shift+0 move container to workspace number $ws10
+
+# Cycle workspaces without leaving the home row.
+bindsym $mod+Ctrl+l  workspace next_on_output
+bindsym $mod+Ctrl+h  workspace prev_on_output
+bindsym $alt+Tab     workspace back_and_forth
+
+# Default homes for the apps that have an obvious one.
+assign [class="(?i)google-chrome"]   $ws3
+assign [class="(?i)firefox"]         $ws3
+assign [class="(?i)thunar"]          $ws4
+assign [class="^music$"]             $ws5
+assign [class="(?i)vlc"]             $ws6
+assign [class="(?i)mpv"]             $ws6
+
+# ---------------------------------------------------------------------------
+# 5. laptop keys  (Dell — intel_backlight, BAT0)
+#
+# Note: i3 has no `--locked` flag (that's a sway extension). While i3lock has
+# the keyboard grabbed, i3 never sees these keys at all, so media/volume keys
+# are inert on the lock screen. That's a plain-i3lock limitation, not a bug.
+# ---------------------------------------------------------------------------
+
+# Volume. pactl talks to pipewire-pulse; the notify wrapper draws an OSD.
+bindsym XF86AudioRaiseVolume  exec --no-startup-id ~/.local/bin/volume up
+bindsym XF86AudioLowerVolume  exec --no-startup-id ~/.local/bin/volume down
+bindsym XF86AudioMute         exec --no-startup-id ~/.local/bin/volume mute
+bindsym XF86AudioMicMute      exec --no-startup-id ~/.local/bin/volume micmute
+
+# Backlight.
+bindsym XF86MonBrightnessUp   exec --no-startup-id ~/.local/bin/brightness up
+bindsym XF86MonBrightnessDown exec --no-startup-id ~/.local/bin/brightness down
+
+# Media — playerctl drives anything MPRIS-aware (Chrome, mpv, VLC, Spotify, mpd).
+bindsym XF86AudioPlay  exec --no-startup-id playerctl play-pause
+bindsym XF86AudioPause exec --no-startup-id playerctl play-pause
+bindsym XF86AudioNext  exec --no-startup-id playerctl next
+bindsym XF86AudioPrev  exec --no-startup-id playerctl previous
+bindsym XF86AudioStop  exec --no-startup-id playerctl stop
+
+# Some keyboards send these instead; harmless to bind both.
+bindsym XF86Display    exec --no-startup-id ~/.local/bin/display-menu
+bindsym XF86Tools      exec --no-startup-id pavucontrol
+bindsym XF86Explorer   exec --no-startup-id $files
+bindsym XF86HomePage   exec --no-startup-id $browser
+
+# Toggle the touchpad (handy while typing with a mouse plugged in).
+bindsym $mod+F9 exec --no-startup-id ~/.local/bin/touchpad-toggle
+
+# ---------------------------------------------------------------------------
+# 6. modes
+# ---------------------------------------------------------------------------
+
+mode "resize" {
+        bindsym h resize shrink width  20 px or 5 ppt
+        bindsym j resize grow   height 20 px or 5 ppt
+        bindsym k resize shrink height 20 px or 5 ppt
+        bindsym l resize grow   width  20 px or 5 ppt
+
+        bindsym Left  resize shrink width  20 px or 5 ppt
+        bindsym Down  resize grow   height 20 px or 5 ppt
+        bindsym Up    resize shrink height 20 px or 5 ppt
+        bindsym Right resize grow   width  20 px or 5 ppt
+
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+        bindsym $mod+r mode "default"
+}
+bindsym $mod+r mode "resize"
+
+set $mode_gaps Gaps:  (o)uter  (i)nner  (0) none  (d) default
+mode "$mode_gaps" {
+        bindsym o      gaps outer current plus 2
+        bindsym Shift+o gaps outer current minus 2
+        bindsym i      gaps inner current plus 2
+        bindsym Shift+i gaps inner current minus 2
+        bindsym 0      gaps inner current set 0; gaps outer current set 0
+        bindsym d      gaps inner current set 6; gaps outer current set 0
+
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+bindsym $mod+g mode "$mode_gaps"
+
+# ---------------------------------------------------------------------------
+# 7. appearance — TokyoNight (Night)
+# ---------------------------------------------------------------------------
+
+set $bg        #1a1b26
+set $bg_dark   #16161e
+set $bg_hl     #292e42
+set $fg        #c0caf5
+set $fg_dark   #a9b1d6
+set $muted     #565f89
+set $accent    #7aa2f7
+set $urgent    #f7768e
+
+# class                 border     backgr.    text       indicator  child_border
+client.focused          $accent    $accent    $bg_dark   $accent    $accent
+client.focused_inactive $bg_hl     $bg_hl     $fg_dark   $bg_hl     $bg_hl
+client.unfocused        $bg_dark   $bg_dark   $muted     $bg_dark   $bg_dark
+client.urgent           $urgent    $urgent    $bg_dark   $urgent    $urgent
+client.placeholder      $bg_dark   $bg_dark   $fg        $bg_dark   $bg_dark
+client.background       $bg
+
+# Borders without titlebars — polybar already tells you what's focused, and
+# on a 768px-tall screen every pixel of vertical space counts.
+default_border          pixel 2
+default_floating_border pixel 2
+# smart_borders is deprecated and conflicts with hide_edge_borders — i3 4.25
+# ignores it and logs an error. hide_edge_borders smart does the same job.
+hide_edge_borders       smart
+
+gaps inner 6
+gaps outer 0
+smart_gaps on
+
+# Popups during fullscreen are more useful than silently dropped.
+popup_during_fullscreen smart
+
+# i3bar is not used — polybar replaces it. Left here commented so `i3 -C`
+# stays quiet and you know where to look if polybar ever fails to start.
+# bar { status_command i3status }
+
+# ---------------------------------------------------------------------------
+# 8. window rules
+# ---------------------------------------------------------------------------
+
+# Float the things that are dialogs by nature.
+for_window [window_role="pop-up"]        floating enable
+for_window [window_role="task_dialog"]   floating enable
+for_window [window_role="Preferences"]   floating enable
+for_window [window_type="dialog"]        floating enable
+for_window [window_type="menu"]          floating enable
+for_window [window_type="splash"]        floating enable
+
+for_window [class="(?i)pavucontrol"]     floating enable, resize set 900 600, move position center
+for_window [class="(?i)blueman-manager"] floating enable, resize set 800 550, move position center
+for_window [class="(?i)nm-connection-editor"] floating enable, move position center
+for_window [class="(?i)lxappearance"]    floating enable, move position center
+for_window [class="(?i)galculator"]      floating enable, move position center
+for_window [class="(?i)nsxiv"]           floating enable, resize set 1100 700, move position center
+for_window [class="(?i)sxiv"]            floating enable, resize set 1100 700, move position center
+for_window [class="(?i)imv"]             floating enable, resize set 1100 700, move position center
+for_window [class="(?i)feh"]             floating enable, move position center
+for_window [class="(?i)file-roller"]     floating enable, move position center
+for_window [class="(?i)xterm"]           floating enable, resize set 900 550, move position center
+
+# Chrome's picture-in-picture should float and stay on top.
+for_window [title="^Picture in picture$"] floating enable, sticky enable, border pixel 1
+
+# Zathura and image viewers get no gaps — they render their own margins.
+for_window [class="(?i)zathura"] gaps inner current set 0
+
+# Keep the browser's download shelf and similar out of the tiling flow.
+no_focus [window_type="notification"]

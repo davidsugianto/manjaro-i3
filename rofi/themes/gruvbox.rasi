@@ -1,0 +1,29 @@
+/* Gruvbox Dark — backup palette.
+ * Same role names as colors.rasi; swap the @import in rofi/config.rasi.
+ */
+
+* {
+    bg          : #282828;
+    bg-alt      : #1d2021;
+    bg-select   : #3c3836;
+
+    fg          : #ebdbb2;
+    fg-alt      : #d5c4a1;
+    muted       : #928374;
+
+    accent      : #83a598;
+    accent-alt  : #d3869b;
+
+    ok          : #b8bb26;
+    warn        : #fabd2f;
+    urgent      : #fb4934;
+
+
+    /* rofi-theme(5): a reference cannot be a *subpart* of a property value,
+     * so `highlight: bold @accent` is a syntax error. The whole composite has
+     * to be defined here and referenced as a unit. */
+    highlight-style : bold #83a598;
+
+    background-color : transparent;
+    text-color       : @fg;
+}

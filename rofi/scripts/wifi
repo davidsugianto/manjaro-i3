@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Wi-Fi picker — bound to a left click on the polybar wlan module.
+#
+# Thin wrapper over nmcli. Known networks connect straight away; new ones
+# prompt for a password in a second rofi box (with -password so it's masked).
+set -euo pipefail
+
+THEME="$HOME/.config/rofi/themes/menu.rasi"
+IFACE="${WIFI_IFACE:-wlp2s0}"
+
+command -v nmcli >/dev/null || {
+    notify-send -a wifi -u critical "Wi-Fi" "NetworkManager (nmcli) not installed"
+    exit 1
+}
+
+# Radio off? Offer to turn it on rather than showing an empty list.
+if [[ "$(nmcli radio wifi)" == "disabled" ]]; then
+    if [[ "$(printf 'no\nyes\n' | rofi -dmenu -no-custom -p "enable wi-fi" \
+             -mesg "Wi-Fi radio is off" -theme "$THEME")" == "yes" ]]; then
+        nmcli radio wifi on
+        sleep 2
+    else
+        exit 0
+    fi
+fi
+
+nmcli device wifi rescan >/dev/null 2>&1 || true
+
+# SSID / signal / security, deduplicated, strongest first. The IN-USE column
+# marks the active network with an asterisk.
+list=$(nmcli --terse --fields IN-USE,SIGNAL,SECURITY,SSID device wifi list --rescan no \
+     | awk -F: '$4 != "" {
+           mark = ($1 == "*") ? "󰸞" : " ";
+           sec  = ($3 == "" || $3 == "--") ? "open" : $3;
+           if (!seen[$4]++) printf "%s  %-28s %3s%%  %s\n", mark, $4, $2, sec;
+       }')
+
+[[ -n "$list" ]] || { notify-send -a wifi -u normal "Wi-Fi" "No networks found"; exit 0; }
+
+extra=$'\n───\n󰖪  disconnect\n󰑓  rescan\n󰤨  open connection editor'
+choice=$(printf '%s%s' "$list" "$extra" | rofi -dmenu -i -no-custom \
+            -p "wi-fi" -mesg "interface: $IFACE" -theme "$THEME")
+
+[[ -n "${choice:-}" ]] || exit 0
+
+case "$choice" in
+    ───) exit 0 ;;
+    *disconnect)            exec nmcli device disconnect "$IFACE" ;;
+    *rescan)                exec "$0" ;;
+    *"connection editor")   exec nm-connection-editor ;;
+esac
+
+# Strip the status glyph, then take the SSID field (columns are space-padded,
+# so cut on the fixed width we printed above).
+ssid=$(sed -E 's/^.{3}//; s/ {2,}[0-9]+%.*$//' <<< "$choice")
+ssid=$(sed -E 's/[[:space:]]+$//' <<< "$ssid")
+
+[[ -n "$ssid" ]] || exit 0
+
+# Already a saved connection? Just bring it up.
+if nmcli --terse --fields NAME connection show | grep -Fxq "$ssid"; then
+    if nmcli connection up id "$ssid" >/dev/null 2>&1; then
+        notify-send -a wifi -u low -i network-wireless "Wi-Fi" "Connected to $ssid"
+    else
+        notify-send -a wifi -u critical -i network-error "Wi-Fi" "Failed to connect to $ssid"
+    fi
+    exit 0
+fi
+
+# New network: ask for a password. -password masks the input.
+pass=$(rofi -dmenu -password -p "password" -mesg "Network: $ssid" -theme "$THEME" <<< "")
+
+if [[ -z "${pass:-}" ]]; then
+    # Empty password — try as an open network.
+    nmcli device wifi connect "$ssid" ifname "$IFACE" >/dev/null 2>&1 \
+        && notify-send -a wifi -u low -i network-wireless "Wi-Fi" "Connected to $ssid" \
+        || notify-send -a wifi -u critical -i network-error "Wi-Fi" "Failed to connect to $ssid"
+    exit 0
+fi
+
+if nmcli device wifi connect "$ssid" password "$pass" ifname "$IFACE" >/dev/null 2>&1; then
+    notify-send -a wifi -u low -i network-wireless "Wi-Fi" "Connected to $ssid"
+else
+    notify-send -a wifi -u critical -i network-error "Wi-Fi" "Failed to connect to $ssid"
+fi

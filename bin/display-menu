@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Quick external-display switcher, driven by rofi.
+#
+# Covers the four things you actually want on a laptop; anything more exotic
+# is a job for arandr, which is the last entry.
+set -euo pipefail
+
+INTERNAL="${INTERNAL_OUTPUT:-eDP-1}"
+ROFI=(rofi -dmenu -i -no-custom -theme "$HOME/.config/rofi/themes/menu.rasi")
+
+# First connected output that isn't the laptop panel.
+EXTERNAL=$(xrandr --query | awk -v int="$INTERNAL" '/ connected/ && $1 != int {print $1; exit}')
+
+if [[ -z "$EXTERNAL" ]]; then
+    notify-send -a display -u low -i video-display \
+        "Display" "No external output connected"
+    xrandr --output "$INTERNAL" --auto --primary
+    exit 0
+fi
+
+choice=$(printf '%s\n' \
+    " Internal only" \
+    " External only" \
+    " Extend — external right" \
+    " Extend — external left" \
+    " Mirror" \
+    " arandr…" \
+    | "${ROFI[@]}" -p "Display" -mesg "Internal: $INTERNAL   External: $EXTERNAL")
+
+case "$choice" in
+    *"Internal only")
+        xrandr --output "$INTERNAL" --auto --primary --output "$EXTERNAL" --off ;;
+    *"External only")
+        xrandr --output "$EXTERNAL" --auto --primary --output "$INTERNAL" --off ;;
+    *"external right")
+        xrandr --output "$INTERNAL" --auto --primary \
+               --output "$EXTERNAL" --auto --right-of "$INTERNAL" ;;
+    *"external left")
+        xrandr --output "$INTERNAL" --auto --primary \
+               --output "$EXTERNAL" --auto --left-of "$INTERNAL" ;;
+    *Mirror)
+        xrandr --output "$INTERNAL" --auto --primary \
+               --output "$EXTERNAL" --auto --same-as "$INTERNAL" ;;
+    *arandr*)
+        exec arandr ;;
+    *)
+        exit 0 ;;
+esac
+
+# Re-lay the wallpaper and bar for the new geometry.
+"$HOME/.local/bin/set-wallpaper" || true
+"$HOME/.config/polybar/launch.sh" || true

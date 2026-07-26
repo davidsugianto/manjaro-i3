@@ -1,0 +1,73 @@
+/* Power menu — a compact horizontal row of five big glyphs.
+ *
+ * Deliberately different in shape from the other menus: you want "log out"
+ * and "shut down" to look nothing like your app launcher, so muscle memory
+ * can't fire one when you meant the other.
+ */
+
+@import "colors.rasi"
+
+* {
+    font: "JetBrainsMono Nerd Font 28";
+}
+
+window {
+    transparency:     "real";
+    location:         center;
+    anchor:           center;
+    width:            520px;
+
+    border-radius:    12px;
+    border:           2px solid;
+    border-color:     @urgent;
+    background-color: @bg;
+    cursor:           "default";
+}
+
+mainbox {
+    spacing:          14px;
+    padding:          22px;
+    background-color: transparent;
+    children:         [ "message", "listview" ];
+}
+
+message {
+    background-color: transparent;
+}
+
+textbox {
+    font:             "JetBrainsMono Nerd Font Medium 10";
+    padding:          6px;
+    horizontal-align: 0.5;
+    background-color: transparent;
+    text-color:       @muted;
+}
+
+listview {
+    columns:          5;
+    lines:            1;
+    cycle:            true;
+    dynamic:          true;
+    scrollbar:        false;
+    spacing:          10px;
+    background-color: transparent;
+}
+
+element {
+    padding:          18px 0px;
+    border-radius:    10px;
+    background-color: @bg-alt;
+    text-color:       @fg-alt;
+    cursor:           pointer;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align:   0.5;
+    background-color: transparent;
+    text-color:       inherit;
+}
+
+element normal.normal   { background-color: @bg-alt;   text-color: @fg-alt; }
+element selected.normal { background-color: @urgent;   text-color: @bg;     }
+element alternate.normal{ background-color: @bg-alt;   text-color: @fg-alt; }

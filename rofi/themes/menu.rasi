@@ -1,0 +1,98 @@
+/* Single-column list — used by the dmenu-style helpers (wifi, display menu,
+ * clipboard, window switcher). Narrower and denser than the app launcher.
+ */
+
+@import "colors.rasi"
+
+* {
+    font: "JetBrainsMono Nerd Font Medium 11";
+}
+
+window {
+    transparency:     "real";
+    location:         center;
+    anchor:           center;
+    width:            520px;
+
+    border-radius:    10px;
+    border:           2px solid;
+    border-color:     @accent;
+    background-color: @bg;
+    cursor:           "default";
+}
+
+mainbox {
+    spacing:          10px;
+    padding:          16px;
+    background-color: transparent;
+    children:         [ "inputbar", "message", "listview" ];
+}
+
+inputbar {
+    spacing:          10px;
+    padding:          10px 14px;
+    border-radius:    8px;
+    background-color: @bg-alt;
+    children:         [ "prompt", "entry" ];
+}
+
+prompt { background-color: transparent; text-color: @accent; }
+
+entry {
+    background-color:  transparent;
+    text-color:        @fg;
+    cursor:            text;
+    placeholder:       "…";
+    placeholder-color: @muted;
+}
+
+message { background-color: transparent; }
+
+textbox {
+    padding:          8px 12px;
+    border-radius:    8px;
+    background-color: @bg-alt;
+    text-color:       @muted;
+}
+
+listview {
+    columns:          1;
+    lines:            9;
+    cycle:            true;
+    dynamic:          true;
+    scrollbar:        false;
+    spacing:          3px;
+    background-color: transparent;
+}
+
+element {
+    spacing:          10px;
+    padding:          8px 12px;
+    border-radius:    8px;
+    background-color: transparent;
+    text-color:       @fg;
+    cursor:           pointer;
+}
+
+element normal.normal    { background-color: transparent; text-color: @fg;         }
+element alternate.normal { background-color: transparent; text-color: @fg;         }
+element normal.urgent    { background-color: transparent; text-color: @urgent;     }
+element normal.active    { background-color: transparent; text-color: @accent-alt; }
+
+element selected.normal  { background-color: @bg-select;  text-color: @accent;     }
+element selected.urgent  { background-color: @urgent;     text-color: @bg;         }
+element selected.active  { background-color: @accent-alt; text-color: @bg;         }
+
+element-icon {
+    size:             20px;
+    vertical-align:   0.5;
+    background-color: transparent;
+    text-color:       inherit;
+}
+
+element-text {
+    vertical-align:   0.5;
+    background-color: transparent;
+    text-color:       inherit;
+    highlight:        @highlight-style;
+}

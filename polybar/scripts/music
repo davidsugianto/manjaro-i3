@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# "Now playing" for the polybar music module.
+#
+# Run with tail = true: we print one line per state change and block in
+# between, rather than being re-executed on a timer. `playerctl --follow`
+# does the blocking for us and emits a line whenever the metadata or the
+# play/pause state changes.
+#
+# Works with any MPRIS player. When several are running, playerctl picks the
+# most recently active one, which is almost always what you meant.
+set -uo pipefail
+
+PLAY_ICON="󰐊"
+PAUSE_ICON="󰏤"
+MAXLEN=40
+
+command -v playerctl >/dev/null || { echo ""; exit 0; }
+
+render() {
+    local status=$1 artist=$2 title=$3 icon text
+
+    # No player running, or one that's stopped — print nothing so the module
+    # collapses instead of showing a stale track.
+    [[ -z "$status" || "$status" == "Stopped" ]] && { echo ""; return; }
+
+    case "$status" in
+        Playing) icon=$PLAY_ICON ;;
+        Paused)  icon=$PAUSE_ICON ;;
+        *)       echo ""; return ;;
+    esac
+
+    if [[ -n "$artist" && -n "$title" ]]; then
+        text="$artist — $title"
+    elif [[ -n "$title" ]]; then
+        text="$title"
+    else
+        text="unknown track"
+    fi
+
+    # Trim to MAXLEN on a character basis and add an ellipsis. polybar's
+    # label-maxlen would cut mid-glyph without one.
+    if (( ${#text} > MAXLEN )); then
+        text="${text:0:MAXLEN-1}…"
+    fi
+
+    # polybar interprets %{...} as formatting tags; strip any that a track
+    # title might contain so a malicious/odd tag can't reformat the bar.
+    text=${text//%\{/ }
+
+    echo "$icon $text"
+}
+
+# --follow blocks and emits on change. The format string gives us all three
+# fields on one line, tab-separated, so a track with " — " in the title can't
+# confuse the parsing.
+playerctl --follow metadata \
+    --format $'{{status}}\t{{artist}}\t{{title}}' 2>/dev/null |
+while IFS=$'\t' read -r status artist title; do
+    render "$status" "$artist" "$title"
+done
+
+# playerctl exits when the last player goes away; leave the module empty.
+echo ""

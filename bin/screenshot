@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Screenshots: saved to ~/Pictures/Screenshots *and* copied to the clipboard,
+# because you almost always want one or the other and never remember which.
+#
+#   screenshot full     whole screen
+#   screenshot area     drag a region (Escape cancels)
+#   screenshot window   the currently focused window
+set -euo pipefail
+
+DIR="${SCREENSHOT_DIR:-$HOME/Pictures/Screenshots}"
+mkdir -p "$DIR"
+FILE="$DIR/$(date +%Y-%m-%d_%H-%M-%S).png"
+
+shot() {
+    if command -v maim >/dev/null; then
+        maim --quiet --hidecursor "$@" "$FILE"
+    else
+        # scrot's flags differ; map the common cases.
+        case "${1:-}" in
+            --select) scrot --overwrite --select --freeze "$FILE" ;;
+            *)        scrot --overwrite "$FILE" ;;
+        esac
+    fi
+}
+
+case "${1:-full}" in
+    full)
+        shot
+        ;;
+    area)
+        # --nodrag lets a plain click select a whole window; --hidecursor keeps
+        # the pointer out of the capture. A cancelled selection exits non-zero,
+        # which we treat as "user changed their mind", not an error.
+        if command -v maim >/dev/null; then
+            maim --quiet --hidecursor --select --nodrag --highlight \
+                 --color=0.478,0.635,0.968,0.25 "$FILE" || { rm -f "$FILE"; exit 0; }
+        else
+            shot --select || { rm -f "$FILE"; exit 0; }
+        fi
+        ;;
+    window)
+        if command -v maim >/dev/null && command -v xdotool >/dev/null; then
+            maim --quiet --hidecursor --window "$(xdotool getactivewindow)" "$FILE"
+        else
+            scrot --overwrite --focused "$FILE"
+        fi
+        ;;
+    *)
+        echo "usage: screenshot {full|area|window}" >&2
+        exit 1
+        ;;
+esac
+
+[[ -s "$FILE" ]] || { rm -f "$FILE"; exit 0; }
+
+xclip -selection clipboard -target image/png -i "$FILE"
+
+notify-send -a "screenshot" -u low -t 3000 \
+    -i "$FILE" \
+    "Screenshot copied" "$(basename "$FILE")"

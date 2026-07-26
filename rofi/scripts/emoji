@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Emoji picker ($mod+.) — selection is copied to the clipboard and typed into
+# the focused window.
+#
+# Prefers the rofi-emoji plugin; falls back to a small built-in list so the
+# keybind isn't dead without it.
+set -euo pipefail
+
+THEME="$HOME/.config/rofi/themes/menu.rasi"
+
+if [[ -e /usr/lib/rofi/emoji.so ]]; then
+    exec rofi -show emoji -modi emoji -theme "$THEME"
+fi
+
+# --- fallback --------------------------------------------------------------
+# Format: "<emoji>  <searchable name>"; we cut the emoji back off on select.
+choice=$(cat <<'EOF' | rofi -dmenu -i -p "emoji" -theme "$THEME"
+👍  thumbs up approve yes
+👎  thumbs down no
+✅  check tick done
+❌  cross fail no
+🎉  party tada celebrate
+🔥  fire hot
+🚀  rocket ship launch deploy
+🐛  bug insect
+💡  bulb idea
+⚠️  warning caution
+❤️  heart love
+😄  smile happy
+😅  sweat nervous
+🤔  thinking hmm
+🙏  pray thanks please
+👀  eyes look
+💯  hundred perfect
+⭐  star favourite
+📝  memo note write
+🔒  lock secure
+EOF
+)
+
+[[ -n "${choice:-}" ]] || exit 0
+
+emoji=${choice%% *}
+
+printf '%s' "$emoji" | xclip -selection clipboard
+command -v xdotool >/dev/null && xdotool type --clearmodifiers -- "$emoji"

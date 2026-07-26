@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Lock the screen.
+#
+# Manjaro's repos only carry plain i3lock (i3lock-color isn't packaged), so
+# instead of fancy ring styling we grab the screen, blur it, tint it toward
+# TokyoNight, and hand the PNG to i3lock. If anything in that chain is missing
+# we fall back to a flat background colour — locking must never fail.
+#
+# -n (nofork) is required: xss-lock holds the systemd sleep lock until this
+# process exits, so forking would let the machine suspend before the screen
+# is actually covered.
+set -uo pipefail
+
+BG="#1a1b26"
+SHOT="${XDG_RUNTIME_DIR:-/tmp}/i3lock-$UID.png"
+
+cleanup() { rm -f "$SHOT"; }
+trap cleanup EXIT
+
+# Pause notifications so they don't render on top of the lock screen.
+command -v dunstctl >/dev/null && dunstctl set-paused true
+
+unpause() {
+    command -v dunstctl >/dev/null && dunstctl set-paused false
+}
+
+blurred_lock() {
+    command -v magick >/dev/null || return 1
+
+    if command -v maim >/dev/null; then
+        maim --quiet --hidecursor "$SHOT" || return 1
+    elif command -v scrot >/dev/null; then
+        scrot --overwrite --pointer=false "$SHOT" || return 1
+    else
+        return 1
+    fi
+
+    # resize down/up = cheap fast blur; the colorize pulls it toward the
+    # TokyoNight background so the lock screen matches the desktop.
+    magick "$SHOT" \
+        -resize 20% \
+        -blur 0x3 \
+        -resize 500% \
+        -fill "$BG" -colorize 45% \
+        -brightness-contrast -12x-8 \
+        "$SHOT" || return 1
+
+    i3lock --nofork --ignore-empty-password --show-failed-attempts --image "$SHOT"
+}
+
+blurred_lock || i3lock --nofork --ignore-empty-password --show-failed-attempts --color "${BG#\#}"
+
+unpause

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Backlight control for intel_backlight via brightnessctl.
+#
+# brightnessctl ships a udev rule that grants the "video" group write access,
+# so this needs no sudo. If it prompts anyway, run:
+#     sudo usermod -aG video "$USER"    (then log out and back in)
+#
+# The 5%- form never reaches zero because brightnessctl clamps at the minimum
+# the panel reports; we add an explicit floor so the screen can't go fully
+# dark and strand you.
+set -euo pipefail
+
+STEP="${BRIGHTNESS_STEP:-5}"
+FLOOR=5   # percent
+
+percent() {
+    brightnessctl --machine-readable | awk -F, '{gsub(/%/,"");print $4;exit}'
+}
+
+notify() {
+    local v=$1
+    notify-send \
+        -a "brightness" \
+        -u low \
+        -t 1500 \
+        -h "string:x-dunst-stack-tag:brightness" \
+        -h "int:value:$v" \
+        -i "display-brightness" \
+        "Brightness  ${v}%"
+}
+
+case "${1:-}" in
+    up)
+        brightnessctl set "${STEP}%+" >/dev/null
+        notify "$(percent)"
+        ;;
+    down)
+        cur=$(percent)
+        if (( cur - STEP < FLOOR )); then
+            brightnessctl set "${FLOOR}%" >/dev/null
+        else
+            brightnessctl set "${STEP}%-" >/dev/null
+        fi
+        notify "$(percent)"
+        ;;
+    set)
+        brightnessctl set "${2:?usage: brightness set <percent>}%" >/dev/null
+        notify "$(percent)"
+        ;;
+    get)
+        percent
+        ;;
+    *)
+        echo "usage: brightness {up|down|set <n>|get}" >&2
+        exit 1
+        ;;
+esac

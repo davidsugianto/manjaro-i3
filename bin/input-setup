@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Per-session pointer tuning.
+#
+# The durable settings live in x11/30-touchpad.conf and x11/40-pointer.conf,
+# which the X server applies at startup. This script exists for the handful of
+# properties that only stick per-session — mainly anything on a USB mouse that
+# gets plugged in *after* X has already started.
+#
+# It's wired to exec_always in the i3 config, so `$mod+Shift+r` re-applies it
+# after hotplugging a mouse.
+set -uo pipefail
+
+prop() {
+    # prop <device-id> <property name> <values...>
+    local id=$1 name=$2; shift 2
+    # Skip silently if the device doesn't expose the property — not every
+    # pointer supports natural scrolling or accel profiles.
+    xinput list-props "$id" | grep -q "$name" || return 0
+    xinput set-prop "$id" "$name" "$@" 2>/dev/null || true
+}
+
+# --- touchpads -------------------------------------------------------------
+xinput list --name-only 2>/dev/null | grep -i 'touchpad' | while read -r name; do
+    id=$(xinput list --id-only "$name" 2>/dev/null | head -n1) || continue
+    [[ -n "$id" ]] || continue
+
+    prop "$id" "libinput Tapping Enabled"              1
+    prop "$id" "libinput Natural Scrolling Enabled"    1
+    prop "$id" "libinput Disable While Typing Enabled" 1
+    prop "$id" "libinput Accel Speed"                  0.3
+    prop "$id" "libinput Click Method Enabled"         0 1   # clickfinger
+    prop "$id" "libinput Scroll Method Enabled"        1 0 0 # two-finger
+done
+
+# --- mice (external pointers) ---------------------------------------------
+# Deliberately NOT natural scrolling: a wheel should scroll the opposite way
+# from a touchpad, otherwise switching between them is disorienting.
+xinput list --name-only 2>/dev/null | grep -iE 'mouse|logi|trackball' | grep -vi 'touchpad' | while read -r name; do
+    id=$(xinput list --id-only "$name" 2>/dev/null | head -n1) || continue
+    [[ -n "$id" ]] || continue
+
+    prop "$id" "libinput Natural Scrolling Enabled" 0
+    prop "$id" "libinput Accel Profile Enabled"     0 1   # flat = 1:1, no accel
+    prop "$id" "libinput Accel Speed"               0
+done
+
+# Faster key repeat — 250ms delay, 45 repeats/sec. Makes vim-style navigation
+# feel noticeably better than X's sluggish default (660ms / 25).
+xset r rate 250 45 2>/dev/null || true
+
+exit 0

@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Power menu.
+#
+# Lock and log out fire immediately. Anything that loses unsaved work —
+# suspend is fine, but reboot/shutdown are not — asks for a yes/no first,
+# because this menu is one keystroke from the app launcher.
+set -euo pipefail
+
+THEME="$HOME/.config/rofi/themes/powermenu.rasi"
+uptime_str=$(uptime -p 2>/dev/null | sed 's/^up //')
+
+lock="󰌾"
+suspend="󰒲"
+logout="󰗽"
+reboot="󰜉"
+shutdown="󰐥"
+
+chosen=$(printf '%s\n%s\n%s\n%s\n%s\n' \
+            "$lock" "$suspend" "$logout" "$reboot" "$shutdown" \
+         | rofi -dmenu \
+                -theme "$THEME" \
+                -mesg "uptime: ${uptime_str:-unknown}" \
+                -no-custom \
+                -selected-row 0)
+
+confirm() {
+    # Reuse the compact menu theme for a plain yes/no.
+    local answer
+    answer=$(printf 'no\nyes\n' | rofi -dmenu \
+                -theme "$HOME/.config/rofi/themes/menu.rasi" \
+                -p "$1" \
+                -mesg "Confirm: $1" \
+                -no-custom \
+                -selected-row 0)
+    [[ "$answer" == "yes" ]]
+}
+
+case "$chosen" in
+    "$lock")
+        exec "$HOME/.local/bin/lock"
+        ;;
+    "$suspend")
+        # Lock first so the machine never wakes to an unlocked desktop.
+        "$HOME/.local/bin/lock" &
+        sleep 0.3
+        exec systemctl suspend
+        ;;
+    "$logout")
+        confirm "log out" && exec i3-msg exit
+        ;;
+    "$reboot")
+        confirm "reboot" && exec systemctl reboot
+        ;;
+    "$shutdown")
+        confirm "shut down" && exec systemctl poweroff
+        ;;
+    *)
+        exit 0
+        ;;
+esac

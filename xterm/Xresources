@@ -1,0 +1,170 @@
+! ~/.Xresources — X resources for xterm, plus shared X settings.
+!
+! Reload without logging out:   xrdb -merge ~/.Xresources
+! (the i3 config does this automatically on reload)
+!
+! xterm is the fallback terminal here ($mod+Shift+Return) — the thing you
+! reach for when WezTerm won't start. So it's configured to be genuinely
+! usable rather than merely present.
+
+! ---------------------------------------------------------------------------
+! TokyoNight (Night)
+!
+! Defined once as named resources, then referenced below. Change these eleven
+! lines to re-theme xterm; the backup palettes are at the bottom.
+! ---------------------------------------------------------------------------
+
+#define TN_BG      #1a1b26
+#define TN_BG_ALT  #16161e
+#define TN_FG      #c0caf5
+#define TN_FG_ALT  #a9b1d6
+#define TN_MUTED   #565f89
+#define TN_ACCENT  #7aa2f7
+#define TN_URGENT  #f7768e
+
+*background:            TN_BG
+*foreground:            TN_FG
+*cursorColor:           TN_FG
+*highlightColor:        #283457
+*colorUL:               TN_ACCENT
+*colorBD:               TN_FG
+
+! normal (0-7)
+*color0:                #15161e
+*color1:                #f7768e
+*color2:                #9ece6a
+*color3:                #e0af68
+*color4:                #7aa2f7
+*color5:                #bb9af7
+*color6:                #7dcfff
+*color7:                #a9b1d6
+
+! bright (8-15)
+*color8:                #414868
+*color9:                #ff899d
+*color10:               #9fe044
+*color11:               #faba4a
+*color12:               #8db0ff
+*color13:               #c7a9ff
+*color14:               #a4daff
+*color15:               #c0caf5
+
+! extended — orange and a deeper red, used by some TUIs
+*color16:               #ff9e64
+*color17:               #db4b4b
+
+! ---------------------------------------------------------------------------
+! xterm
+! ---------------------------------------------------------------------------
+
+XTerm*termName:                 xterm-256color
+XTerm*locale:                   true
+XTerm*utf8:                     2
+XTerm*utf8Title:                true
+
+! Font. The Nerd Font gives xterm the same glyph coverage as WezTerm, so
+! prompts and TUIs do not fall apart in the fallback terminal.
+XTerm*faceName:                 JetBrainsMono Nerd Font
+XTerm*faceSize:                 10
+XTerm*faceNameDoublesize:       Noto Color Emoji
+XTerm*renderFont:               true
+XTerm*forceBoxChars:            false
+
+! Ctrl+plus / Ctrl+minus step through these.
+XTerm*faceSize1:                8
+XTerm*faceSize2:                9
+XTerm*faceSize3:                11
+XTerm*faceSize4:                13
+XTerm*faceSize5:                16
+
+XTerm*internalBorder:           8
+XTerm*borderWidth:              0
+XTerm*scrollBar:                false
+XTerm*saveLines:                10000
+XTerm*scrollTtyOutput:          false
+XTerm*scrollKey:                true
+
+XTerm*cursorBlink:              false
+XTerm*cursorUnderLine:          false
+XTerm*pointerColor:             TN_ACCENT
+XTerm*pointerColorBackground:   TN_BG
+! Hide the mouse pointer while typing.
+XTerm*pointerMode:              2
+
+XTerm*bellIsUrgent:             true
+XTerm*visualBell:               false
+
+! Treat these as word characters when double-clicking, so you can select a
+! path or URL in one go instead of five.
+XTerm*charClass:                33:48,35-38:48,39:43,42-47:48,58-59:48,61:48,63-64:48,95:48,126:48
+
+! Let programs use the alternate screen (less, vim, htop restore your
+! scrollback on exit).
+XTerm*titeInhibit:              false
+
+! Copy/paste that matches every other app: Ctrl+Shift+C / Ctrl+Shift+V.
+XTerm*selectToClipboard:        true
+XTerm*translations:             #override \n\
+    Ctrl Shift <Key>C:          copy-selection(CLIPBOARD) \n\
+    Ctrl Shift <Key>V:          insert-selection(CLIPBOARD) \n\
+    Ctrl <Key>minus:            smaller-vt-font() \n\
+    Ctrl <Key>plus:             larger-vt-font() \n\
+    Ctrl <Key>0:                set-vt-font(d) \n\
+    Shift <Key>Prior:           scroll-back(1,halfpage) \n\
+    Shift <Key>Next:            scroll-forw(1,halfpage)
+
+! Run as a login shell so ~/.zprofile and friends are sourced.
+XTerm*loginShell:               true
+XTerm*metaSendsEscape:          true
+XTerm*eightBitInput:            false
+
+! ---------------------------------------------------------------------------
+! other X resources
+! ---------------------------------------------------------------------------
+
+! DPI. This panel is 1366x768 at 14in, about 112 DPI, but 96 keeps GTK and Qt
+! sizing consistent with the polybar/rofi pixel values in this repo. Raise it
+! to 120 or 144 only if you move to a HiDPI screen.
+Xft.dpi:                        96
+Xft.antialias:                  true
+Xft.hinting:                    true
+Xft.hintstyle:                  hintslight
+Xft.rgba:                       rgb
+Xft.lcdfilter:                  lcddefault
+Xft.autohint:                   false
+
+! ---------------------------------------------------------------------------
+! Mouse cursor
+!
+! This is what WezTerm reads on X11 (along with $XCURSOR_THEME). Without it,
+! WezTerm and other raw-X clients fall back to the ancient default X11 bitmap
+! cursor — the chunky black-and-white arrow that looks nothing like the
+! pointer in GTK apps.
+!
+! The theme name must be a directory under /usr/share/icons or ~/.icons that
+! contains a cursors/ subdirectory. The stock Manjaro config here pointed at
+! "xcursor-breeze", which is not a package that exists — check with:
+!     ls /usr/share/icons | while read t; do
+!         test -d "/usr/share/icons/$t/cursors" && echo "$t"; done
+! (a literal slash-star would start a C comment here — cpp processes
+!  this file, so avoid that sequence even inside "!" comments.)
+Xcursor.theme:                  breeze-cursors
+Xcursor.size:                   24
+
+! i3lock / xscreensaver-style dialogs pick these up.
+*Dialog*background:             TN_BG
+*Dialog*foreground:             TN_FG
+
+! ---------------------------------------------------------------------------
+! backup palettes — comment out the TokyoNight block above and uncomment one
+! ---------------------------------------------------------------------------
+!
+! Dracula:
+!   background #282a36  foreground #f8f8f2
+!   color0-7   #21222c #ff5555 #50fa7b #f1fa8c #bd93f9 #ff79c6 #8be9fd #f8f8f2
+!   color8-15  #6272a4 #ff6e6e #69ff94 #ffffa5 #d6acff #ff92df #a4ffff #ffffff
+!
+! Gruvbox Dark:
+!   background #282828  foreground #ebdbb2
+!   color0-7   #282828 #cc241d #98971a #d79921 #458588 #b16286 #689d6a #a89984
+!   color8-15  #928374 #fb4934 #b8bb26 #fabd2f #83a598 #d3869b #8ec07c #ebdbb2

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Opens the update UI — bound to a left click on the polybar updates module.
+#
+# This exists as a script rather than an inline click-left command because
+# polybar refuses config values containing unescaped backslashes, and the
+# nested quoting needed to express this on one line hits exactly that.
+set -uo pipefail
+
+if command -v pamac-manager >/dev/null; then
+    # The GUI the pamac-tray applet used to open, which this module replaced.
+    exec pamac-manager --updates
+fi
+
+exec wezterm start -- sh -c 'sudo pacman -Syu; printf "\ndone — press any key"; read -r _'

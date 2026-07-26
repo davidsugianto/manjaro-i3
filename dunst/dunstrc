@@ -1,0 +1,160 @@
+# ~/.config/dunst/dunstrc — dunst 1.13
+#
+# Notifications sit under the polybar, top-right, styled to match it.
+#
+# The helper scripts in bin/ send `-h string:x-dunst-stack-tag:volume` so that
+# holding a volume key updates one popup instead of stacking twenty. That's
+# what the stack_tag support below is for.
+
+[global]
+    monitor = 0
+    follow = mouse            # show on whichever screen has the pointer
+
+    # --- geometry ---
+    # width can be a single value or min/max; the range lets short messages
+    # stay compact while long ones grow.
+    width = (240, 420)
+    height = (0, 320)
+    origin = top-right
+    # y-offset clears the floating polybar (26pt bar + 5pt gap + margin).
+    offset = (10, 42)
+    scale = 0
+    notification_limit = 6
+
+    # --- progress bar (volume/brightness OSD) ---
+    progress_bar = true
+    progress_bar_height = 8
+    progress_bar_frame_width = 0
+    progress_bar_min_width = 200
+    progress_bar_max_width = 420
+    progress_bar_corner_radius = 4
+
+    indicate_hidden = yes
+    transparency = 8
+    separator_height = 2
+    padding = 12
+    horizontal_padding = 14
+    text_icon_padding = 10
+    frame_width = 2
+    corner_radius = 8
+    gap_size = 6
+
+    separator_color = frame
+    sort = urgency_descending
+    idle_threshold = 120
+
+    # --- text ---
+    font = JetBrainsMono Nerd Font Medium 10
+    line_height = 0
+    markup = full
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    vertical_alignment = center
+    show_age_threshold = 60
+    ellipsize = end
+    ignore_newline = no
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = no
+
+    # --- icons ---
+    enable_recursive_icon_lookup = true
+    icon_theme = "Papirus-Dark, Adwaita"
+    icon_position = left
+    min_icon_size = 24
+    max_icon_size = 48
+
+    # --- history ---
+    sticky_history = yes
+    history_length = 40
+
+    # --- behaviour ---
+    dmenu = /usr/bin/rofi -dmenu -p dunst -theme ~/.config/rofi/themes/menu.rasi
+    browser = /usr/bin/xdg-open
+    always_run_script = true
+    title = Dunst
+    class = Dunst
+    ignore_dbusclose = false
+
+    # X11 specifics
+    force_xwayland = false
+    force_xinerama = false
+    mouse_left_click = close_current
+    mouse_middle_click = do_action, close_current
+    mouse_right_click = close_all
+
+[experimental]
+    # Recompute DPI from the X server on the fly, so notifications stay the
+    # right size after plugging in an external monitor.
+    per_monitor_dpi = false
+
+# ---------------------------------------------------------------------------
+# urgency levels — TokyoNight (Night)
+# ---------------------------------------------------------------------------
+
+[urgency_low]
+    background = "#16161e"
+    foreground = "#a9b1d6"
+    frame_color = "#292e42"
+    highlight = "#7aa2f7"
+    timeout = 4
+    default_icon = dialog-information
+
+[urgency_normal]
+    background = "#1a1b26"
+    foreground = "#c0caf5"
+    frame_color = "#7aa2f7"
+    highlight = "#7aa2f7"
+    timeout = 8
+    default_icon = dialog-information
+
+[urgency_critical]
+    background = "#1a1b26"
+    foreground = "#c0caf5"
+    frame_color = "#f7768e"
+    highlight = "#f7768e"
+    # Critical notifications never auto-dismiss — that's the whole point.
+    timeout = 0
+    default_icon = dialog-error
+
+# ---------------------------------------------------------------------------
+# per-app rules
+# ---------------------------------------------------------------------------
+
+# The OSD popups from bin/volume and bin/brightness: no icon padding fuss,
+# short timeout, and never stacked.
+[osd]
+    appname = "(volume|brightness)"
+    format = "<b>%s</b>"
+    timeout = 2
+    urgency = low
+    frame_color = "#7aa2f7"
+    highlight = "#7aa2f7"
+
+# Screenshot previews get longer to look at.
+[screenshot]
+    appname = "screenshot"
+    timeout = 6
+    urgency = low
+    max_icon_size = 96
+
+# Music track changes — magenta to match the polybar module.
+[music]
+    appname = "(playerctl|mpd|Spotify|ncmpcpp)"
+    timeout = 4
+    urgency = low
+    frame_color = "#bb9af7"
+    highlight = "#bb9af7"
+
+# Battery warnings should be impossible to miss.
+[battery]
+    summary = "(?i)battery"
+    urgency = critical
+    frame_color = "#f7768e"
+    timeout = 0
+
+# Chrome/Firefox web notifications: keep them brief, they're rarely urgent.
+[browser]
+    appname = "(Google Chrome|Chromium|Firefox)"
+    timeout = 6
+    urgency = normal

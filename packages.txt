@@ -1,0 +1,123 @@
+# Packages for this setup. All from the official Manjaro/Arch repos — no AUR
+# required. Install with:
+#
+#     sudo pacman -S --needed - < packages.txt
+#
+# (install.sh does this for you, skipping anything already present.)
+# Lines starting with # and blank lines are stripped by install.sh.
+
+# --- window manager & desktop ----------------------------------------------
+i3-wm
+polybar
+rofi
+dunst
+picom
+autotiling                 # automatic split direction for i3
+xorg-xrandr
+xorg-xsetroot
+xorg-xinput
+xorg-xkill                 # $mod+Shift+q force-kill
+xorg-xrdb
+xorg-xset
+numlockx
+dex                        # runs XDG autostart entries under i3
+arandr                     # GUI for xrandr, used by bin/display-menu
+
+# --- terminals & shell -----------------------------------------------------
+wezterm                    # primary terminal
+xterm                      # fallback terminal
+kitty                      # alternative terminal (configured, not default)
+tmux
+zsh
+zsh-completions
+zsh-autosuggestions
+zsh-syntax-highlighting
+zsh-history-substring-search
+zsh-theme-powerlevel10k
+
+# --- fonts -----------------------------------------------------------------
+ttf-jetbrains-mono-nerd    # main UI + terminal font
+ttf-nerd-fonts-symbols-mono # glyph fallback for polybar/rofi icons
+noto-fonts
+noto-fonts-emoji
+noto-fonts-cjk
+
+# --- audio -----------------------------------------------------------------
+pipewire
+pipewire-pulse             # required by polybar's pulseaudio module & pactl
+pipewire-alsa
+wireplumber                # session manager — without it there's no sound
+pavucontrol
+playerctl                  # MPRIS control for the music module & media keys
+
+# --- laptop ----------------------------------------------------------------
+brightnessctl              # backlight, no sudo needed
+acpi
+xss-lock
+i3lock
+upower
+
+# --- network ---------------------------------------------------------------
+networkmanager
+network-manager-applet     # provides nm-connection-editor; the tray applet
+                           # itself is suppressed, see x11/autostart/
+nm-connection-editor
+polkit-gnome               # authentication agent — without it, GUI apps that
+                           # need root (pamac-manager, gparted) cannot prompt
+blueman
+bluez
+bluez-utils
+
+# --- screenshots & clipboard -----------------------------------------------
+maim
+xclip
+xdotool
+
+# --- applications ----------------------------------------------------------
+thunar                     # file manager
+thunar-archive-plugin
+file-roller
+gvfs                       # trash, mounting, network shares in Thunar
+nsxiv                      # image viewer
+feh                        # wallpaper setter (also views images)
+zathura                    # PDF/document viewer
+zathura-pdf-mupdf
+mpv                        # video
+neovim
+
+# --- CLI tools -------------------------------------------------------------
+eza                        # ls replacement
+bat                        # cat/less replacement
+ripgrep
+fd
+fzf
+zoxide
+jq
+tree
+htop
+btop
+unzip
+7zip                       # provides `7z` (replaced the old p7zip package)
+unrar
+expac                      # used by the `bigpkgs` zsh function
+pacman-contrib             # checkupdates, paccache
+lm_sensors
+
+# --- theming ---------------------------------------------------------------
+papirus-icon-theme         # icon theme referenced by rofi and dunst
+lxappearance               # GTK theme switcher
+qt5ct
+kvantum
+
+# --- optional: rofi plugins -------------------------------------------------
+# Uncomment if you want the richer calculator and emoji pickers. The scripts
+# in rofi/scripts/ fall back gracefully when these are absent.
+#rofi-calc
+#rofi-emoji
+
+# --- optional: music --------------------------------------------------------
+# A local music setup. playerctl already covers Spotify/Chrome/mpv, so these
+# are only needed if you want a self-hosted daemon + TUI.
+#mpd
+#mpc
+#ncmpcpp

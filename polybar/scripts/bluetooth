@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Bluetooth state for polybar, replacing the blueman tray applet.
+#
+# The applet drew a full-colour GTK icon that looked nothing like the Nerd
+# Font glyphs in the rest of the bar. This prints one glyph in the same
+# language as every other module.
+#
+#   off / rfkill-blocked   󰂲   (muted)
+#   on, nothing paired up  󰂯   (muted)
+#   device(s) connected    󰂱 N (blue)
+#
+# NOTE: on this laptop the M240 mouse is a Bluetooth device, so "connected"
+# is the normal state — the count is genuinely useful, not decoration.
+set -uo pipefail
+
+ICON_OFF="󰂲"
+ICON_ON="󰂯"
+ICON_CONN="󰂱"
+
+command -v bluetoothctl >/dev/null || { echo ""; exit 0; }
+
+# Adapter missing entirely (no hardware / driver not loaded): print nothing so
+# the module collapses rather than showing a permanently-off icon.
+if ! bluetoothctl show >/dev/null 2>&1; then
+    echo ""
+    exit 0
+fi
+
+# rfkill soft/hard block is a separate thing from "Powered: no" — check both.
+if command -v rfkill >/dev/null && rfkill list bluetooth 2>/dev/null | grep -q "yes"; then
+    echo "$ICON_OFF"
+    exit 0
+fi
+
+powered=$(bluetoothctl show 2>/dev/null | awk '/Powered:/{print $2; exit}')
+if [[ "$powered" != "yes" ]]; then
+    echo "$ICON_OFF"
+    exit 0
+fi
+
+# `devices Connected` is the documented way; older bluez needs the fallback.
+count=$(bluetoothctl devices Connected 2>/dev/null | grep -c '^Device ' || true)
+if [[ -z "$count" || "$count" == "0" ]]; then
+    count=$(bluetoothctl info 2>/dev/null | grep -c 'Connected: yes' || true)
+fi
+
+if (( count > 0 )); then
+    # %{F...} is a polybar formatting tag — colour just this state blue.
+    echo "%{F#7aa2f7}${ICON_CONN} ${count}%{F-}"
+else
+    echo "$ICON_ON"
+fi

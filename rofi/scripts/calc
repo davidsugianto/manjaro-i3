@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Calculator ($mod+=).
+#
+# Uses the rofi-calc plugin when it's installed (live results as you type,
+# unit conversion, "10 usd in eur"). Falls back to a plain bc pipe so the
+# keybind still does something useful on a machine without the plugin.
+set -euo pipefail
+
+THEME="$HOME/.config/rofi/themes/menu.rasi"
+
+if rofi -h 2>/dev/null | grep -q calc || [[ -e /usr/lib/rofi/calc.so ]]; then
+    exec rofi -show calc -modi calc -no-show-match -no-sort \
+              -calc-command "echo -n '{result}' | xclip -selection clipboard" \
+              -theme "$THEME"
+fi
+
+# --- fallback --------------------------------------------------------------
+expr=$(rofi -dmenu -p "calc" -mesg "bc syntax — result is copied to clipboard" \
+            -theme "$THEME" <<< "")
+[[ -n "${expr:-}" ]] || exit 0
+
+result=$(printf 'scale=6\n%s\n' "$expr" | bc -l 2>/dev/null || true)
+
+if [[ -z "$result" ]]; then
+    notify-send -a calc -u normal "Calculator" "Could not evaluate: $expr"
+    exit 1
+fi
+
+# Trim trailing zeros so 4/2 shows "2" rather than "2.000000".
+result=$(sed -E 's/\.0+$//; s/(\.[0-9]*[1-9])0+$/\1/' <<< "$result")
+
+printf '%s' "$result" | xclip -selection clipboard
+notify-send -a calc -u low -t 3000 "$expr = $result" "copied to clipboard"

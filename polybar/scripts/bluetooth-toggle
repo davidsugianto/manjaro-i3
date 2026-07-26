@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Toggle the Bluetooth adapter — bound to a right click on the polybar module.
+#
+# Careful on this machine: the M240 mouse is a Bluetooth device, so powering
+# the adapter off takes the pointer with it. We warn via a notification rather
+# than silently leaving you without a mouse.
+set -uo pipefail
+
+command -v bluetoothctl >/dev/null || exit 0
+
+powered=$(bluetoothctl show 2>/dev/null | awk '/Powered:/{print $2; exit}')
+
+if [[ "$powered" == "yes" ]]; then
+    # Count what we're about to disconnect so the notification can say so.
+    n=$(bluetoothctl devices Connected 2>/dev/null | grep -c '^Device ' || echo 0)
+    bluetoothctl power off >/dev/null 2>&1
+    if (( n > 0 )); then
+        notify-send -a bluetooth -u normal -i bluetooth-disabled \
+            "Bluetooth off" "$n device(s) disconnected — including any BT mouse"
+    else
+        notify-send -a bluetooth -u low -t 2000 \
+            -h "string:x-dunst-stack-tag:bluetooth" \
+            -i bluetooth-disabled "Bluetooth off"
+    fi
+else
+    # Clear any rfkill block first, otherwise `power on` silently does nothing.
+    command -v rfkill >/dev/null && rfkill unblock bluetooth 2>/dev/null
+    bluetoothctl power on >/dev/null 2>&1
+    notify-send -a bluetooth -u low -t 2000 \
+        -h "string:x-dunst-stack-tag:bluetooth" \
+        -i bluetooth-active "Bluetooth on"
+fi
+
+# No polybar-msg refresh here: that only works for modules that define hooks,
+# and this one is a plain interval script. It picks up the change within 5s.

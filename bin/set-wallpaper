@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Set the desktop wallpaper.
+#
+# Order of preference:
+#   1. an explicit path passed as $1 (also remembered for next login)
+#   2. whatever was set last time (~/.cache/wallpaper)
+#   3. a random image from ~/Pictures/Wallpapers
+#   4. a flat TokyoNight background, so a fresh install never shows the
+#      default X11 stipple
+set -euo pipefail
+
+CACHE="$HOME/.cache/wallpaper"
+DIR="${WALLPAPER_DIR:-$HOME/Pictures/Wallpapers}"
+BG="#1a1b26"
+
+apply() {
+    local img=$1
+    if command -v feh >/dev/null; then
+        feh --no-fehbg --bg-fill "$img"
+    elif command -v nitrogen >/dev/null; then
+        nitrogen --set-zoom-fill --save "$img"
+    else
+        return 1
+    fi
+    printf '%s\n' "$img" > "$CACHE"
+}
+
+flat() {
+    if command -v hsetroot >/dev/null; then
+        hsetroot -solid "$BG"
+    else
+        xsetroot -solid "$BG"
+    fi
+}
+
+if [[ $# -gt 0 && -f "$1" ]]; then
+    apply "$1" && exit 0
+fi
+
+if [[ -f "$CACHE" ]]; then
+    saved=$(< "$CACHE")
+    [[ -f "$saved" ]] && apply "$saved" && exit 0
+fi
+
+if [[ -d "$DIR" ]]; then
+    # -print0/-z keeps filenames with spaces intact.
+    pick=$(find "$DIR" -type f \
+                \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \) \
+                -print0 | shuf -z -n1 | tr -d '\0')
+    [[ -n "$pick" ]] && apply "$pick" && exit 0
+fi
+
+flat

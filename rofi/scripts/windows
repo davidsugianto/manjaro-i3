@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Window switcher ($mod+Tab) — jump to any window across all workspaces.
+exec rofi -show window -theme "$HOME/.config/rofi/themes/menu.rasi"

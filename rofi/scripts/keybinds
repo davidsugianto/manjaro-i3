@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Keybinding cheatsheet ($mod+Shift+slash).
+#
+# Parsed live out of the i3 config rather than maintained as a separate list,
+# so it can never drift out of date. Selecting a line runs that command.
+set -euo pipefail
+
+CONFIG="${I3_CONFIG:-$HOME/.config/i3/config}"
+THEME="$HOME/.config/rofi/themes/menu.rasi"
+
+[[ -r "$CONFIG" ]] || { notify-send -a i3 -u critical "Keybinds" "No config at $CONFIG"; exit 1; }
+
+# Resolve `set $var value` definitions so the list shows "wezterm" rather
+# than "$term", then print "keys → action" for every bindsym.
+choice=$(awk '
+    # Collect variable definitions.
+    /^[[:space:]]*set[[:space:]]+\$/ {
+        name = $2
+        $1 = ""; $2 = ""
+        sub(/^[[:space:]]+/, "")
+        vars[name] = $0
+        next
+    }
+    /^[[:space:]]*bindsym/ {
+        line = $0
+        sub(/^[[:space:]]*bindsym[[:space:]]+/, "", line)
+        # Drop i3 flags that arent part of the key combo.
+        gsub(/--(locked|release|no-startup-id|whole-window|border|exclude-titlebar)[[:space:]]+/, "", line)
+
+        # Split into the key spec and the action.
+        idx = index(line, " ")
+        if (idx == 0) next
+        keys   = substr(line, 1, idx - 1)
+        action = substr(line, idx + 1)
+
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", action)
+        if (action == "") next
+
+        # Expand $variables in both halves.
+        for (v in vars) {
+            gsub("\\" v, vars[v], keys)
+            gsub("\\" v, vars[v], action)
+        }
+        gsub(/^exec[[:space:]]+/, "", action)
+
+        printf "%-28s  →  %s\n", keys, action
+    }
+' "$CONFIG" | rofi -dmenu -i -p "keybinds" \
+                   -mesg "$(wc -l < "$CONFIG") lines · selecting a row runs it" \
+                   -theme "$THEME" -width 70)
+
+[[ -n "${choice:-}" ]] || exit 0
+
+# Run whatever came after the arrow.
+cmd=${choice#*→  }
+[[ -n "$cmd" ]] && exec i3-msg "exec -- $cmd" >/dev/null

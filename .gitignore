@@ -1,0 +1,137 @@
+# ---------------------------------------------------------------------------
+# Secrets
+#
+# This is a dotfiles repo for a cloud infrastructure engineer, and dotfiles
+# repos get pushed to GitHub. Committing a kubeconfig, an AWS credentials file
+# or an SSH private key is a genuinely bad day — and `git rm` afterwards does
+# not remove it from history.
+#
+# These patterns are deliberately broad. Nothing here is currently tracked;
+# they exist so that a future `git add -A` after you drop a config in this
+# directory can't quietly ship a credential.
+# ---------------------------------------------------------------------------
+
+# SSH / GPG / age / sops
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.pem
+*.key
+*.ppk
+*_rsa
+*_ed25519
+known_hosts
+authorized_keys
+*.gpg
+*.asc
+*.agekey
+.sops.yaml
+age.key
+
+# Cloud provider credentials
+.aws/
+aws_credentials
+credentials
+.azure/
+.gcloud/
+gcloud-*.json
+service-account*.json
+*-sa.json
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+.kube/
+config.kubeconfig
+
+# Terraform / Terragrunt — state files routinely contain plaintext secrets
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform/
+.terraform.lock.hcl
+.terragrunt-cache/
+crash.log
+
+# Ansible
+vault_pass*
+*.vault
+ansible/inventory/*_prod*
+
+# Generic
+.env
+.env.*
+!.env.example
+*.secret
+secrets.*
+.netrc
+
+# ---------------------------------------------------------------------------
+# Local, machine-specific overrides
+#
+# The zsh config sources ~/.zshrc.local last precisely so machine-specific
+# settings (work proxies, private aliases) stay out of version control. If you
+# keep a copy in here for convenience, it stays untracked.
+# ---------------------------------------------------------------------------
+*.local
+!*.local.example
+zshrc.local
+local.conf
+
+# ---------------------------------------------------------------------------
+# Backups and generated files
+#
+# `bak` (zsh/functions.zsh) writes <file>.YYYYMMDD-HHMMSS.bak next to the
+# original, and several scripts here use .tmp files while writing atomically.
+# ---------------------------------------------------------------------------
+*.bak
+*.bak.*
+*.orig
+*.rej
+*.tmp
+*.tmp.*
+*~
+*.old
+
+# install.sh writes here, but under $HOME rather than the repo — listed in case
+# you ever run it with the backup dir pointed inside the working tree.
+.dotfiles-backup/
+
+# ---------------------------------------------------------------------------
+# Editor / OS
+# ---------------------------------------------------------------------------
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.iml
+.*.sw?
+*.swp
+*.swo
+tags
+.netrwhist
+.DS_Store
+Thumbs.db
+.directory
+
+# ---------------------------------------------------------------------------
+# Runtime state that must never be committed
+#
+# None of this normally lands in the repo — the caches live under ~/.cache and
+# ~/.local/state — but wallpapers and logs are easy to drop in here by accident.
+# ---------------------------------------------------------------------------
+*.log
+wallpapers/
+Wallpapers/
+screenshots/
+Screenshots/
+
+# Images: the repo carries no binary assets on purpose, so a stray screenshot
+# or wallpaper doesn't bloat the history. Comment this out if you add a
+# docs/images/ directory for the README.
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp

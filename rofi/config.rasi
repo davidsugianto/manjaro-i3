@@ -1,0 +1,54 @@
+/* ~/.config/rofi/config.rasi — rofi 2.0
+ *
+ * rofi 2.0 merged the Wayland backend; on X11 it auto-selects xcb and the
+ * .rasi theme syntax is unchanged from 1.7. Run `rofi -info` if you ever need
+ * to confirm which backend and config it actually picked up.
+ *
+ * The default theme is ALWAYS loaded first — @theme is what unloads it. If
+ * you drop the @theme line you'll get default styling bleeding through, which
+ * is the single most common "my rofi theme is broken" cause.
+ */
+
+configuration {
+    modes: [ drun, run, window, filebrowser ];
+
+    /* Match how the launcher scripts invoke rofi. */
+    show-icons:          true;
+    icon-theme:          "Papirus-Dark";
+    display-drun:        "apps";
+    display-run:         "run";
+    display-window:      "window";
+    display-filebrowser: "files";
+    drun-display-format: "{name}";
+    window-format:       "{w}  {c}  {t}";
+
+    /* Typing behaviour. */
+    matching:            "fuzzy";
+    sort:                true;
+    sorting-method:      "fzf";
+    case-sensitive:      false;
+
+    /* Keep the most-used apps at the top over time. */
+    drun-use-desktop-cache: false;
+    disable-history:     false;
+
+    /* Terminal used by run-in-terminal entries and Shift+Return. */
+    terminal:            "wezterm";
+    run-shell-command:   "{terminal} start -- {cmd}";
+
+    /* Vim-ish navigation in addition to the arrow keys. */
+    kb-row-up:           "Up,Control+k";
+    kb-row-down:         "Down,Control+j";
+    kb-accept-entry:     "Return,KP_Enter";
+    kb-remove-to-eol:    "";
+    kb-mode-next:        "Shift+Right,Control+Tab";
+    kb-mode-previous:    "Shift+Left,Control+ISO_Left_Tab";
+}
+
+/* Palette — switch these two lines together to re-theme every menu. */
+@import "themes/colors.rasi"
+/* @import "themes/dracula.rasi" */
+/* @import "themes/gruvbox.rasi" */
+
+/* Default styling for `rofi -show drun` with no explicit -theme. */
+@theme "themes/launcher.rasi"

@@ -1,0 +1,131 @@
+/* App launcher — centred, two columns of icons + names.
+ *
+ * Sized for 1366x768: 620px wide and 8 visible rows fills the screen
+ * comfortably without covering it entirely.
+ */
+
+@import "colors.rasi"
+
+* {
+    font: "JetBrainsMono Nerd Font Medium 11";
+}
+
+window {
+    transparency:     "real";
+    location:         center;
+    anchor:           center;
+    fullscreen:       false;
+    width:            620px;
+    x-offset:         0px;
+    y-offset:         0px;
+
+    enabled:          true;
+    border-radius:    10px;
+    border:           2px solid;
+    border-color:     @accent;
+    background-color: @bg;
+    cursor:           "default";
+}
+
+mainbox {
+    enabled:          true;
+    spacing:          10px;
+    padding:          16px;
+    background-color: transparent;
+    children:         [ "inputbar", "message", "listview" ];
+}
+
+/* --- search box --------------------------------------------------------- */
+
+inputbar {
+    enabled:          true;
+    spacing:          10px;
+    padding:          10px 14px;
+    border-radius:    8px;
+    background-color: @bg-alt;
+    text-color:       @fg;
+    children:         [ "prompt", "entry" ];
+}
+
+prompt {
+    enabled:          true;
+    background-color: transparent;
+    text-color:       @accent;
+}
+
+entry {
+    enabled:          true;
+    background-color: transparent;
+    text-color:       @fg;
+    cursor:           text;
+    placeholder:      "search…";
+    placeholder-color: @muted;
+}
+
+message {
+    enabled:          true;
+    margin:           0px;
+    padding:          0px;
+    background-color: transparent;
+}
+
+textbox {
+    padding:          8px 12px;
+    border-radius:    8px;
+    background-color: @bg-alt;
+    text-color:       @fg-alt;
+}
+
+/* --- results ------------------------------------------------------------ */
+
+listview {
+    enabled:          true;
+    columns:          2;
+    lines:            8;
+    cycle:            true;
+    dynamic:          true;
+    scrollbar:        false;
+    layout:           vertical;
+    reverse:          false;
+    fixed-height:     false;
+    fixed-columns:    true;
+
+    spacing:          4px;
+    background-color: transparent;
+    cursor:           "default";
+}
+
+element {
+    enabled:          true;
+    spacing:          10px;
+    padding:          8px 10px;
+    border-radius:    8px;
+    background-color: transparent;
+    text-color:       @fg;
+    cursor:           pointer;
+}
+
+element normal.normal   { background-color: transparent;  text-color: @fg;     }
+element alternate.normal{ background-color: transparent;  text-color: @fg;     }
+element normal.urgent   { background-color: transparent;  text-color: @urgent; }
+element normal.active   { background-color: transparent;  text-color: @accent-alt; }
+
+element selected.normal { background-color: @bg-select;   text-color: @accent; }
+element selected.urgent { background-color: @urgent;      text-color: @bg;     }
+element selected.active { background-color: @accent-alt;  text-color: @bg;     }
+
+element-icon {
+    size:             24px;
+    vertical-align:   0.5;
+    background-color: transparent;
+    text-color:       inherit;
+    cursor:           inherit;
+}
+
+element-text {
+    vertical-align:   0.5;
+    background-color: transparent;
+    text-color:       inherit;
+    cursor:           inherit;
+    highlight:        @highlight-style;
+}

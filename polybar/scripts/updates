@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Pending update count for the optional [module/updates].
+#
+# checkupdates (from pacman-contrib) syncs a *temporary* database in
+# /tmp and diffs against it — it never touches /var/lib/pacman, so running it
+# on a timer is safe and won't leave you with a partially-synced system.
+#
+# Prints the count; see the note below about printing zero.
+set -uo pipefail
+
+command -v checkupdates >/dev/null || { echo ""; exit 0; }
+
+# checkupdates exits 2 when there's nothing to do — that's success, not error.
+count=$(checkupdates 2>/dev/null | wc -l)
+
+# Print the count even when it's zero: a module that appears and disappears
+# makes the whole right-hand cluster jump sideways, which is worse than a
+# permanent "0". Change to `echo ""` in the else branch if you'd rather it
+# vanish when there is nothing to do.
+echo "$count"

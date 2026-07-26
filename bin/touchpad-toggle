@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Enable/disable the touchpad — useful when a mouse is plugged in and your
+# palms keep brushing the pad while typing.
+#
+# Matches by name so it survives xinput device-ID renumbering (IDs change
+# every time you replug a USB device).
+set -euo pipefail
+
+DEVICE="${TOUCHPAD_NAME:-Touchpad}"
+
+id=$(xinput list --id-only "$(xinput list --name-only | grep -i "$DEVICE" | head -n1)" 2>/dev/null || true)
+
+if [[ -z "$id" ]]; then
+    notify-send -a touchpad -u critical "Touchpad" "No device matching '$DEVICE'"
+    exit 1
+fi
+
+# "Device Enabled" is property 'Device Enabled' (int, 1 value): 1 or 0
+state=$(xinput list-props "$id" | awk -F: '/Device Enabled/{gsub(/[^01]/,"",$2);print $2;exit}')
+
+if [[ "$state" == "1" ]]; then
+    xinput disable "$id"
+    notify-send -a touchpad -u low -t 1500 \
+        -h "string:x-dunst-stack-tag:touchpad" \
+        -i input-touchpad "Touchpad  disabled"
+else
+    xinput enable "$id"
+    notify-send -a touchpad -u low -t 1500 \
+        -h "string:x-dunst-stack-tag:touchpad" \
+        -i input-touchpad "Touchpad  enabled"
+fi
