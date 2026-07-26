@@ -53,7 +53,10 @@ PKG[containers]="docker docker-compose docker-buildx lazydocker dive"
 PKG[iac]="terraform terragrunt opentofu tflint packer vault ansible ansible-lint pre-commit"
 PKG[k8s]="kubectl helm k9s kubectx kustomize kind minikube stern kubeseal argocd sops age trivy"
 PKG[cloud]="aws-cli-v2 azure-cli"
-PKG[cli]="direnv lazygit github-cli glab pyenv python-pipx nodejs npm fzf ripgrep fd bat eza zoxide htop btop tree"
+# python-pip AND python-pipx: they do different jobs on Arch. See the note in
+# install_python_note() — Python here is externally managed (PEP 668), so
+# `pip install` outside a venv is refused by design.
+PKG[cli]="direnv lazygit github-cli glab pyenv python-pip python-pipx python-virtualenv nodejs npm fzf ripgrep fd bat eza zoxide htop btop tree"
 PKG[net]="mtr nmap tcpdump bind whois socat sshpass"
 PKG[apps]="code"
 
@@ -63,7 +66,7 @@ DESC[containers]="docker, compose, buildx, lazydocker, dive"
 DESC[iac]="terraform, terragrunt, opentofu, tflint, packer, vault, ansible"
 DESC[k8s]="kubectl, helm, k9s, kubectx, kustomize, kind, minikube, stern, argocd, sops, trivy"
 DESC[cloud]="aws-cli-v2, azure-cli"
-DESC[cli]="direnv, lazygit, gh, glab, pyenv, node, fzf, ripgrep, bat, eza…"
+DESC[cli]="direnv, lazygit, gh, glab, pyenv, pip/pipx, node, fzf, ripgrep, bat, eza…"
 DESC[net]="mtr, nmap, tcpdump, dig, whois, socat"
 DESC[apps]="VS Code (OSS build from extra)"
 
@@ -304,6 +307,25 @@ setup_docker() {
 }
 
 # ---------------------------------------------------------------------------
+# python
+# ---------------------------------------------------------------------------
+
+python_note() {
+    command -v pip >/dev/null || return 0
+    [[ -e /usr/lib/python3*/EXTERNALLY-MANAGED ]] 2>/dev/null || return 0
+
+    section "Python"
+    ok "pip installed ($(pip --version 2>/dev/null | awk '{print $2}'))"
+    info "Python here is EXTERNALLY MANAGED (PEP 668), so a bare"
+    info "  pip install <pkg>"
+    info "is refused on purpose — it would fight pacman over /usr/lib. Use:"
+    info "  pipx install <app>        standalone CLI apps (ansible-lint, black…)"
+    info "  python -m venv .venv      per-project libraries"
+    info "  sudo pacman -S python-<x> when the package is in the repos"
+    info "  pip install --user <pkg>  needs --break-system-packages; avoid"
+}
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 
@@ -320,6 +342,10 @@ done
 
 for g in "${SELECTED[@]}"; do
     [[ "$g" == "containers" ]] && setup_docker && break
+done
+
+for g in "${SELECTED[@]}"; do
+    [[ "$g" == "cli" ]] && python_note && break
 done
 
 install_aur_packages
