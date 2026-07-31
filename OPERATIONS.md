@@ -169,6 +169,18 @@ Then `$mod+Shift+R` to restart i3 and reload everything.
 ./development-tools.sh --k8s --iac        # install specific groups
 ```
 
+**k8s home lab (VirtualBox + Vagrant, multi-node clusters via kubeadm):**
+
+```bash
+./development-tools.sh --virt --aur   # vagrant is AUR-only, needs --aur
+```
+
+Installs VirtualBox, builds the `vboxdrv` kernel module (dkms, matched to
+whatever kernel is currently running), loads it, and adds you to the
+`vboxusers` group — log out and back in for that to take effect. This is
+separate from `--k8s`'s `kind`/`minikube`, which run clusters as containers
+rather than full VMs.
+
 **Go is managed by GVM, not pacman:**
 
 ```bash

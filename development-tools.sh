@@ -50,6 +50,10 @@ declare -A PKG DESC
 PKG[base]="git git-lfs base-devel jq yq curl wget unzip openssh rsync"
 PKG[go]="gopls delve"
 PKG[containers]="docker docker-compose docker-buildx lazydocker dive"
+# virtualbox-host-dkms builds vboxdrv against whatever kernel is actually
+# running — see setup_virtualbox() for the matching linux*-headers package,
+# which is version-pinned and can't live as a static name in this list.
+PKG[virt]="virtualbox virtualbox-host-dkms"
 PKG[iac]="terraform terragrunt opentofu tflint packer vault ansible ansible-lint pre-commit"
 PKG[k8s]="kubectl helm k9s kubectx kustomize kind minikube stern kubeseal argocd sops age trivy"
 PKG[cloud]="aws-cli-v2 azure-cli"
@@ -63,6 +67,7 @@ PKG[apps]="code"
 DESC[base]="git, jq, yq, ssh, build tools"
 DESC[go]="Go via GVM (gvm.sh) + gopls, delve"
 DESC[containers]="docker, compose, buildx, lazydocker, dive"
+DESC[virt]="VirtualBox (vagrant is AUR-only — see --aur) — VM-based k8s home lab"
 DESC[iac]="terraform, terragrunt, opentofu, tflint, packer, vault, ansible"
 DESC[k8s]="kubectl, helm, k9s, kubectx, kustomize, kind, minikube, stern, argocd, sops, trivy"
 DESC[cloud]="aws-cli-v2, azure-cli"
@@ -71,10 +76,12 @@ DESC[net]="mtr, nmap, tcpdump, dig, whois, socat"
 DESC[apps]="VS Code (OSS build from extra)"
 
 # AUR — needs yay, builds from source, can be slow. Opt in with --aur.
-AUR_pkgs="terraform-docs google-cloud-cli visual-studio-code-bin notion-app-electron k6 infracost kubecolor"
-DESC[aur]="terraform-docs, gcloud, VS Code (MS build), Notion, k6, infracost, kubecolor"
+# vagrant lives here, not in PKG[virt]: it has never been in the official
+# repos, only the AUR.
+AUR_pkgs="terraform-docs google-cloud-cli visual-studio-code-bin notion-app-electron k6 infracost kubecolor vagrant"
+DESC[aur]="terraform-docs, gcloud, VS Code (MS build), Notion, k6, infracost, kubecolor, vagrant"
 
-ALL_GROUPS=(base go containers iac k8s cloud cli net apps)
+ALL_GROUPS=(base go containers virt iac k8s cloud cli net apps)
 
 # ---------------------------------------------------------------------------
 # argument parsing
@@ -102,7 +109,7 @@ for arg in "$@"; do
     case "$arg" in
         --all)  SELECTED=("${ALL_GROUPS[@]}") ;;
         --aur)  WANT_AUR=1 ;;
-        --base|--go|--containers|--iac|--k8s|--cloud|--cli|--net|--apps)
+        --base|--go|--containers|--virt|--iac|--k8s|--cloud|--cli|--net|--apps)
                 SELECTED+=("${arg#--}") ;;
         --no-docker-group) DO_DOCKER_GROUP=0 ;;
         --dry-run) DRY_RUN=1 ;;
@@ -307,6 +314,56 @@ setup_docker() {
 }
 
 # ---------------------------------------------------------------------------
+# virtualbox
+# ---------------------------------------------------------------------------
+
+setup_virtualbox() {
+    if ! command -v VBoxManage >/dev/null && (( ! DRY_RUN )); then
+        return 0
+    fi
+    section "VirtualBox"
+
+    # The dkms package builds vboxdrv against whatever kernel is actually
+    # running (e.g. linux612-headers for 6.12) — that name moves with every
+    # kernel bump, so it can't be a static entry in PKG[virt].
+    local kver headers
+    kver=$(uname -r | grep -oE '^[0-9]+\.[0-9]+' | tr -d '.')
+    headers="linux${kver}-headers"
+    if pacman -Qq "$headers" &>/dev/null; then
+        ok "$headers already installed"
+    elif pacman -Si "$headers" &>/dev/null; then
+        run sudo pacman -S --needed --noconfirm "$headers" \
+            || warn "failed to install $headers — the vboxdrv dkms build may fail"
+    else
+        warn "no repo package named $headers for kernel $(uname -r)"
+        info "install the matching linux-headers package by hand, then: sudo dkms autoinstall"
+    fi
+
+    if (( DRY_RUN )); then
+        info "[dry-run] would modprobe vboxdrv and add $USER to vboxusers"
+        info "[dry-run] vagrant itself is AUR-only — needs --aur"
+        return 0
+    fi
+
+    if lsmod | grep -q '^vboxdrv'; then
+        ok "vboxdrv module already loaded"
+    else
+        run sudo modprobe vboxdrv \
+            && ok "vboxdrv loaded" \
+            || warn "vboxdrv failed to load — check 'dkms status', or reboot and retry"
+    fi
+
+    if id -nG "$USER" | tr ' ' '\n' | grep -qx vboxusers; then
+        ok "$USER already in the vboxusers group"
+    else
+        run sudo usermod -aG vboxusers "$USER" \
+            && ok "added — log out and back in for it to take effect"
+    fi
+
+    (( WANT_AUR )) || info "vagrant is AUR-only — add --aur to install it"
+}
+
+# ---------------------------------------------------------------------------
 # python
 # ---------------------------------------------------------------------------
 
@@ -342,6 +399,10 @@ done
 
 for g in "${SELECTED[@]}"; do
     [[ "$g" == "containers" ]] && setup_docker && break
+done
+
+for g in "${SELECTED[@]}"; do
+    [[ "$g" == "virt" ]] && setup_virtualbox && break
 done
 
 for g in "${SELECTED[@]}"; do

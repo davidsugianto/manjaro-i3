@@ -313,3 +313,5 @@ fi
 [[ -r ~/.zshrc.local ]] && source ~/.zshrc.local
 export PATH="/home/maternal/.gvm/go/bin:$PATH"
 export PATH="/home/maternal/.gvm/tools-bin:$PATH"
+
+. "$HOME/.local/share/../bin/env"
