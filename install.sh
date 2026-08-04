@@ -6,8 +6,11 @@
 #   ./install.sh --link-only  symlinks only, no pacman, no systemctl
 #   ./install.sh --packages   install packages and stop
 #   ./install.sh --dry-run    print what would happen, change nothing
-#   ./install.sh --no-x11     skip the /etc/X11 input rules (the only sudo
-#                             step outside package installation)
+#   ./install.sh --no-x11     skip the /etc/X11 input rules
+#   ./install.sh --no-greeter skip the /etc/lightdm/slick-greeter.conf install
+#
+# --no-x11 and --no-greeter are the only steps that write outside $HOME
+# (besides package installation) and are the only ones that ask for sudo.
 #
 # Everything it replaces is backed up to ~/.dotfiles-backup/<timestamp>/ first,
 # so a bad run is always reversible. Symlinks mean editing ~/.config/i3/config
@@ -23,15 +26,17 @@ DO_PACKAGES=1
 DO_LINKS=1
 DO_SERVICES=1
 DO_X11=1
+DO_GREETER=1
 DRY_RUN=0
 
 for arg in "$@"; do
     case "$arg" in
-        --link-only) DO_PACKAGES=0; DO_SERVICES=0; DO_X11=0 ;;
-        --packages)  DO_LINKS=0;    DO_SERVICES=0; DO_X11=0 ;;
+        --link-only) DO_PACKAGES=0; DO_SERVICES=0; DO_X11=0; DO_GREETER=0 ;;
+        --packages)  DO_LINKS=0;    DO_SERVICES=0; DO_X11=0; DO_GREETER=0 ;;
         --no-x11)    DO_X11=0 ;;
+        --no-greeter) DO_GREETER=0 ;;
         --dry-run)   DRY_RUN=1 ;;
-        -h|--help)   sed -n '3,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help)   sed -n '3,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) printf 'unknown option: %s\n' "$arg" >&2; exit 1 ;;
     esac
 done
@@ -205,7 +210,7 @@ if (( DO_LINKS )); then
 fi
 
 # ===========================================================================
-# 4. X11 input rules  (the only step that writes outside $HOME)
+# 4. X11 input rules
 # ===========================================================================
 
 if (( DO_X11 )); then
@@ -227,6 +232,50 @@ if (( DO_X11 )); then
         ok "$target"
     done
     info "Input changes apply after the next logout."
+fi
+
+# ===========================================================================
+# 4b. login screen (lightdm-slick-greeter)
+# ===========================================================================
+
+if (( DO_GREETER )); then
+    if command -v lightdm >/dev/null || [[ -d /etc/lightdm ]]; then
+        section "Installing login screen config"
+        info "Goes to /etc/lightdm/slick-greeter.conf and needs sudo."
+        info "Skip with --no-greeter if you'd rather not touch system config."
+
+        target="/etc/lightdm/slick-greeter.conf"
+        if [[ -f "$target" ]] && cmp -s "$REPO/greeter/slick-greeter.conf" "$target"; then
+            ok "$target (unchanged)"
+        else
+            if [[ -f "$target" ]]; then
+                run sudo cp "$target" "$target.bak-$STAMP"
+                warn "backed up $target to $target.bak-$STAMP"
+            fi
+            run sudo install -Dm644 "$REPO/greeter/slick-greeter.conf" "$target"
+            ok "$target"
+        fi
+
+        # The greeter can't read anything under $HOME (mode 700), so the
+        # background it points at has to be copied to a system path. Do it
+        # once here from whatever wallpaper is currently set; re-run
+        # sync-greeter-background by hand later if you change it.
+        bg_dest="/usr/share/backgrounds/manjaro-i3-greeter.jpg"
+        if [[ -f "$bg_dest" ]]; then
+            ok "$bg_dest (already set)"
+        else
+            wall="$HOME/.cache/wallpaper"
+            if [[ -f "$wall" && -f "$(<"$wall")" ]]; then
+                run sudo install -Dm644 "$(<"$wall")" "$bg_dest"
+                ok "$bg_dest (from current wallpaper)"
+            else
+                info "no wallpaper set yet — run set-wallpaper, then sync-greeter-background"
+            fi
+        fi
+        info "Login screen changes apply after the next logout/restart."
+    else
+        info "lightdm not detected — skipping login screen config"
+    fi
 fi
 
 # ===========================================================================

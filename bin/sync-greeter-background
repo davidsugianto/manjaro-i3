@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Copy the current desktop wallpaper to where the lightdm greeter can read it.
+#
+# lightdm runs slick-greeter as its own user, and $HOME is mode 700, so it
+# can never see anything under ~/Pictures directly — the greeter's background
+# has to live in a system location. set-wallpaper has no reason to know that
+# (it never needs sudo), so this is a separate, explicit step: run it after
+# changing your wallpaper if you want the login screen to match.
+set -euo pipefail
+
+CACHE="$HOME/.cache/wallpaper"
+DEST="/usr/share/backgrounds/manjaro-i3-greeter.jpg"
+
+img="${1:-}"
+if [[ -z "$img" ]]; then
+    [[ -f "$CACHE" ]] || { echo "no wallpaper set yet — run set-wallpaper first, or pass a path" >&2; exit 1; }
+    img=$(< "$CACHE")
+fi
+
+[[ -f "$img" ]] || { echo "not a file: $img" >&2; exit 1; }
+
+sudo install -Dm644 "$img" "$DEST"
+echo "greeter background set from: $img"
+echo "takes effect on next logout/restart"

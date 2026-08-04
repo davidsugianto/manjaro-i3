@@ -7,6 +7,8 @@ admired in a screenshot.
 Structure and conventions follow [mino29/arch-i3](https://github.com/mino29/arch-i3):
 split polybar modules, role-named theme files, one palette per program.
 
+![Desktop screenshot: polybar bar, btop, screenfetch, and a file browser in tmux](docs/images/desktop.png)
+
 **[OPERATIONS.md](OPERATIONS.md)** — day-to-day usage: copy/paste, Wi-Fi,
 bluetooth, screenshots, theme switching, and what to check when something
 breaks. This file is the reference; that one is the how-to.

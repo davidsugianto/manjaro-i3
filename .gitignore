@@ -128,10 +128,12 @@ screenshots/
 Screenshots/
 
 # Images: the repo carries no binary assets on purpose, so a stray screenshot
-# or wallpaper doesn't bloat the history. Comment this out if you add a
-# docs/images/ directory for the README.
+# or wallpaper doesn't bloat the history. docs/images/ is the one exception —
+# that's the README's own screenshots, not something dropped in by accident.
 *.png
 *.jpg
 *.jpeg
 *.gif
 *.webp
+!docs/images/*.png
+!docs/images/*.jpg
