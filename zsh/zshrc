@@ -315,3 +315,9 @@ export PATH="/home/maternal/.gvm/go/bin:$PATH"
 export PATH="/home/maternal/.gvm/tools-bin:$PATH"
 
 . "$HOME/.local/share/../bin/env"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/maternal/google-cloud-sdk/path.zsh.inc' ]; then . '/home/maternal/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/maternal/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/maternal/google-cloud-sdk/completion.zsh.inc'; fi

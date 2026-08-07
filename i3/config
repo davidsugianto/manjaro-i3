@@ -221,6 +221,7 @@ bindsym $alt+Tab     workspace back_and_forth
 # Default homes for the apps that have an obvious one.
 assign [class="(?i)google-chrome"]   $ws3
 assign [class="(?i)firefox"]         $ws3
+assign [class="(?i)zen"]             $ws3
 assign [class="(?i)thunar"]          $ws4
 assign [class="^music$"]             $ws5
 assign [class="(?i)vlc"]             $ws6

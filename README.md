@@ -156,7 +156,7 @@ automatically, so you rarely need `$mod+b` / `$mod+v`.
 `$mod+1..0` to switch, `$mod+Shift+1..0` to move a window there.
 `$mod+Ctrl+h/l` cycles, `Alt+Tab` jumps to the last one.
 
-Chrome → 3, Thunar → 4, music → 5, video → 6 by default.
+Chrome/Firefox/Zen → 3, Thunar → 4, music → 5, video → 6 by default.
 
 ### Screenshots
 
