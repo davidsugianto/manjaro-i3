@@ -1,31 +1,31 @@
-/* TokyoNight (Night) — shared colour roles for every rofi menu.
+/* Catppuccin Mocha — shared colour roles for every rofi menu.
  *
  * Only this file knows the actual hex values. launcher.rasi, menu.rasi and
  * powermenu.rasi all import it and refer to the role names, so switching to
- * Dracula or Gruvbox is a one-line change in rofi/config.rasi.
+ * TokyoNight, Dracula or Gruvbox is a one-line change in rofi/config.rasi.
  */
 
 * {
-    bg          : #1a1b26;
-    bg-alt      : #16161e;
-    bg-select   : #283457;
+    bg          : #1e1e2e;
+    bg-alt      : #181825;
+    bg-select   : #585b70;
 
-    fg          : #c0caf5;
-    fg-alt      : #a9b1d6;
-    muted       : #565f89;
+    fg          : #cdd6f4;
+    fg-alt      : #bac2de;
+    muted       : #6c7086;
 
-    accent      : #7aa2f7;
-    accent-alt  : #bb9af7;
+    accent      : #89b4fa;
+    accent-alt  : #cba6f7;
 
-    ok          : #9ece6a;
-    warn        : #e0af68;
-    urgent      : #f7768e;
+    ok          : #a6e3a1;
+    warn        : #f9e2af;
+    urgent      : #f38ba8;
 
 
     /* rofi-theme(5): a reference cannot be a *subpart* of a property value,
      * so `highlight: bold @accent` is a syntax error. The whole composite has
      * to be defined here and referenced as a unit. */
-    highlight-style : bold #7aa2f7;
+    highlight-style : bold #89b4fa;
 
     /* Aliases rofi itself looks for. */
     background-color : transparent;

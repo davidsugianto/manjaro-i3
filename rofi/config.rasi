@@ -45,8 +45,10 @@ configuration {
     kb-mode-previous:    "Shift+Left,Control+ISO_Left_Tab";
 }
 
-/* Palette — switch these two lines together to re-theme every menu. */
+/* Palette — colors.rasi is always the active theme; swap its contents or
+ * point @import at a backup file to re-theme every menu. */
 @import "themes/colors.rasi"
+/* @import "themes/tokyonight.rasi" */
 /* @import "themes/dracula.rasi" */
 /* @import "themes/gruvbox.rasi" */
 

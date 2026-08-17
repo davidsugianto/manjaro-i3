@@ -3,15 +3,15 @@
 #
 # Manjaro's repos only carry plain i3lock (i3lock-color isn't packaged), so
 # instead of fancy ring styling we grab the screen, blur it, tint it toward
-# TokyoNight, and hand the PNG to i3lock. If anything in that chain is missing
-# we fall back to a flat background colour — locking must never fail.
+# Catppuccin Mocha, and hand the PNG to i3lock. If anything in that chain is
+# missing we fall back to a flat background colour — locking must never fail.
 #
 # -n (nofork) is required: xss-lock holds the systemd sleep lock until this
 # process exits, so forking would let the machine suspend before the screen
 # is actually covered.
 set -uo pipefail
 
-BG="#1a1b26"
+BG="#1e1e2e"
 SHOT="${XDG_RUNTIME_DIR:-/tmp}/i3lock-$UID.png"
 
 cleanup() { rm -f "$SHOT"; }
@@ -36,7 +36,7 @@ blurred_lock() {
     fi
 
     # resize down/up = cheap fast blur; the colorize pulls it toward the
-    # TokyoNight background so the lock screen matches the desktop.
+    # Catppuccin Mocha background so the lock screen matches the desktop.
     magick "$SHOT" \
         -resize 20% \
         -blur 0x3 \

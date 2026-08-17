@@ -1,8 +1,8 @@
 # manjaro-i3
 
-A dark, quiet i3 desktop for a laptop. TokyoNight throughout, with Dracula and
-Gruvbox as drop-in alternates. Built to be copied, tweaked, and used — not
-admired in a screenshot.
+A dark, quiet i3 desktop for a laptop. Catppuccin Mocha throughout, with
+TokyoNight, Dracula and Gruvbox as drop-in alternates. Built to be copied,
+tweaked, and used — not admired in a screenshot.
 
 Structure and conventions follow [mino29/arch-i3](https://github.com/mino29/arch-i3):
 split polybar modules, role-named theme files, one palette per program.
@@ -197,6 +197,31 @@ current directory — run `tt` in a project and you're set.
 
 ---
 
+## Neovim
+
+[LazyVim](https://www.lazyvim.org/) configured as an IDE for the devops
+toolchain in `development-tools.sh`: neo-tree as a file-tree sidebar on the
+left, LSP/formatting/linting/treesitter wired up for Go, TypeScript/JS,
+Terraform, Docker, Kubernetes/Helm, YAML, JSON, Python and bash, all
+auto-installed by Mason on first launch. Colorscheme is Catppuccin Mocha,
+matching `colors/catppuccin-mocha.sh`.
+
+| Key | Action |
+| --- | --- |
+| `<leader>e` | Toggle file explorer (neo-tree) |
+| `<leader><space>` | Find files |
+| `<leader>/` | Grep in project |
+| `<leader>ff` | Format buffer |
+| `gd` / `gr` | Go to definition / references |
+| `<leader>ca` | Code actions |
+| `]d` / `[d` | Next/previous diagnostic |
+
+Config lives in `nvim/`, symlinked to `~/.config/nvim`. Language support is
+LazyVim's official `extras` (see `nvim/lua/config/lazy.lua`); bash has no
+official extra, so it's wired up by hand in `nvim/lua/plugins/bash.lua`.
+
+---
+
 ## Theming
 
 One palette, three programs deep. To switch schemes:
@@ -215,8 +240,8 @@ Each theme file uses the same **role names** — `background`, `foreground`,
 reference a raw hex value and swapping schemes touches one line per program.
 See `colors/README.md`.
 
-TokyoNight values are copied from
-[folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) upstream, so
+Catppuccin Mocha values are copied from
+[catppuccin/catppuccin](https://github.com/catppuccin/catppuccin) upstream, so
 they match Neovim exactly.
 
 ---
@@ -303,7 +328,8 @@ mouse and pressing `$mod+Shift+r` picks it up without a logout.
 
 **Lock screen.** Manjaro's repos only carry plain `i3lock`, not `i3lock-color`.
 `bin/lock` grabs the screen, blurs it with ImageMagick, and tints it toward
-TokyoNight; if any part of that is unavailable it falls back to a flat colour.
+Catppuccin Mocha; if any part of that is unavailable it falls back to a flat
+colour.
 Locking never fails.
 
 Because i3lock holds a keyboard grab, i3 never sees your media keys while

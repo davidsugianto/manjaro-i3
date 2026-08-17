@@ -5,13 +5,13 @@
 #   1. an explicit path passed as $1 (also remembered for next login)
 #   2. whatever was set last time (~/.cache/wallpaper)
 #   3. a random image from ~/Pictures/Wallpapers
-#   4. a flat TokyoNight background, so a fresh install never shows the
+#   4. a flat Catppuccin Mocha background, so a fresh install never shows the
 #      default X11 stipple
 set -euo pipefail
 
 CACHE="$HOME/.cache/wallpaper"
 DIR="${WALLPAPER_DIR:-$HOME/Pictures/Wallpapers}"
-BG="#1a1b26"
+BG="#1e1e2e"
 
 apply() {
     local img=$1

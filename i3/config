@@ -45,7 +45,7 @@ exec_always --no-startup-id ~/.config/polybar/launch.sh
 # Notifications.
 exec_always --no-startup-id ~/.config/i3/scripts/restart-dunst.sh
 
-# Wallpaper (falls back to a flat TokyoNight background if none is set).
+# Wallpaper (falls back to a flat Catppuccin Mocha background if none is set).
 exec_always --no-startup-id ~/.local/bin/set-wallpaper
 
 # Automatic split direction — new windows split the wider axis, so you get
@@ -297,17 +297,17 @@ mode "$mode_gaps" {
 bindsym $mod+g mode "$mode_gaps"
 
 # ---------------------------------------------------------------------------
-# 7. appearance — TokyoNight (Night)
+# 7. appearance — Catppuccin Mocha
 # ---------------------------------------------------------------------------
 
-set $bg        #1a1b26
-set $bg_dark   #16161e
-set $bg_hl     #292e42
-set $fg        #c0caf5
-set $fg_dark   #a9b1d6
-set $muted     #565f89
-set $accent    #7aa2f7
-set $urgent    #f7768e
+set $bg        #1e1e2e
+set $bg_dark   #181825
+set $bg_hl     #313244
+set $fg        #cdd6f4
+set $fg_dark   #bac2de
+set $muted     #6c7086
+set $accent    #89b4fa
+set $urgent    #f38ba8
 
 # class                 border     backgr.    text       indicator  child_border
 client.focused          $accent    $accent    $bg_dark   $accent    $accent

@@ -137,3 +137,8 @@ Screenshots/
 *.webp
 !docs/images/*.png
 !docs/images/*.jpg
+
+# nvim — local runtime state, not config. lazy-lock.json (pinned plugin
+# versions) IS committed on purpose; this is just an install/extras-seen
+# marker LazyVim regenerates per machine.
+nvim/lazyvim.json

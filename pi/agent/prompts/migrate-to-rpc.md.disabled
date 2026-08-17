@@ -1,0 +1,259 @@
+---
+description: Migrate selected monolith data helpers to a typed gRPC data service, including contract, schema, Docker, and endpoint verification
+argument-hint: "<source-repo/file + functions> -> <target-service>"
+---
+# Migrate Helpers to gRPC Data Service
+
+Input:
+
+```text
+$@
+```
+
+Migrate only the requested helper functions. This is a cross-repository change: understand source behavior first, make it available through typed gRPC, and prove it against a fresh local database. Do not change source callers unless explicitly requested.
+
+Use the smallest working design. Prefer existing gRPC, dbmate, pgx, Docker Compose, and test conventions. No new dependency or abstraction without a demonstrated need.
+
+## Phase 0 — Discovery and written plan
+
+Before editing:
+
+1. Read the full source helper file and every requested function.
+2. Search all source call sites. Record actual argument shapes, optional parameters, return values, missing-row behavior, filters, cache side effects, and transaction/multi-write semantics.
+3. Read the source schema/migrations for every table, enum, relationship, index, and soft-delete field touched by the helpers.
+4. Read the target service’s current proto, generated bindings, handler, service, repository, tests, Dockerfile, Compose file, Makefile, and configuration.
+5. Read the canonical data-migration repository and its dbmate conventions. Never edit an applied migration.
+6. Identify the shared contract repository and its generation/lint/release workflow.
+7. Inspect available local tooling: Docker/Compose, dbmate, buf, grpcurl, Go/toolchain. Prefer disposable containers where a host tool is absent.
+8. Check clean/dirty Git status in every affected repository. Do not overwrite unrelated work.
+
+Present a plan before code containing exactly:
+
+1. Smallest files that need changes, one line each.
+2. Public API/schema/behavior that must not change.
+3. Risks/unknowns and how to verify each.
+4. Test surface: existing tests to extend and new tests needed.
+
+Wait for explicit `go` / `proceed` / equivalent before editing.
+
+## Phase 1 — Behavior contract
+
+Translate each helper into one typed RPC. Start with a table like this:
+
+| Source helper | RPC | Scope/filter behavior | Missing result | Writes |
+|---|---|---|---|---|
+
+Rules:
+
+- Existing RPC names, method signatures, field numbers, and wire behavior are immutable. Append fields and methods only.
+- Do not expose a Supabase `select_fields`, raw SQL, or arbitrary projection string over gRPC. Model the actual required typed result.
+- Preserve intentional source behavior exactly:
+  - distinguish scoped active reads from unscoped direct-ID/name reads;
+  - preserve `is_deleted`, `deleted_at`, status, tenant/business, and relation filters;
+  - preserve `false` versus missing for boolean lookups;
+  - preserve add/update/upsert/delete return behavior;
+  - make related multi-write operations atomic even if the source helper was not.
+- Use protobuf `optional` scalar fields where absence differs from zero/false.
+- Use `google.protobuf.Struct` only for existing JSON/JSONB payloads. Use `int64` for PostgreSQL bigint values.
+- Keep relation models separate when their meanings differ. Example: a legacy product projection and an `ai_products` association joined to a product must not be conflated.
+- Keep complex projections minimal. Do not copy every source `*` field into the contract unless a caller or requested behavior needs it.
+- Use Buf-compliant request/response names: an RPC `GetFoo` uses `GetFooRequest` / `GetFooResponse`.
+- Document status behavior: invalid input → `InvalidArgument`; absent resource → `NotFound`; database failure → `Internal`; invalid API key remains existing auth behavior.
+
+Generate bindings through the contract repository’s existing command. Do not hand-edit generated protobuf files.
+
+## Phase 2 — Database migration
+
+Add one new forward-only dbmate migration in the canonical data DB repository.
+
+- Do not modify old/applied migrations.
+- Add only source tables/columns/constraints required by the requested RPCs and seeded verification flow.
+- Recreate source primary keys, relation keys, defaults, nullable behavior, soft-delete fields, and FK actions where they affect helper semantics.
+- Plain `text` is acceptable for source enum columns when no enum-specific behavior is required; do not copy unrelated enum/table sprawl.
+- Add targeted indexes for actual predicate shapes, typically `(business_id, agent_id)`, active partial indexes, and join keys.
+- Include a valid developer-only `-- migrate:down` section in dependency-safe reverse order.
+- Never hand-edit generated Jet/schema artifacts; use the repository’s generation process separately.
+
+Validate on an empty disposable PostgreSQL 18 + pgvector database:
+
+```sh
+dbmate --migrations-dir db/migrations --no-dump-schema up --strict
+dbmate --migrations-dir db/migrations --no-dump-schema rollback
+dbmate --migrations-dir db/migrations --no-dump-schema up --strict
+```
+
+Use a pinned dbmate container if dbmate is not installed locally. Run `git diff --check`.
+
+## Phase 3 — Target service implementation
+
+Keep the existing target layering:
+
+```text
+proto/generated contract -> gRPC handler -> service validation/status mapping -> repository -> pgx
+```
+
+### Repository
+
+- Use parameterized pgx queries only.
+- Put source filtering in the query: tenant/business, active/deleted rows, document soft deletes, and relationship ownership.
+- Return a named not-found sentinel from repository methods where appropriate.
+- Use a transaction for every operation with more than one persistent write, including soft-delete + relation detachment and create + default child record.
+- Do not silently discard relation-query errors. Fail the RPC rather than return incomplete authoritative data.
+- Make batch upserts transactional.
+
+### Service
+
+- Validate required identifiers and payloads before repository calls.
+- Convert repository errors to gRPC statuses once, consistently.
+- Validate range conversion before storing a protobuf `int64` in an internal `int32` field. Never silently narrow.
+- Validate JSON payloads before storing them.
+
+### Handler and mapping
+
+- Implement every new generated RPC; add a compile-time assertion that the handler satisfies the generated server interface.
+- Map all fields and nested relation data deliberately.
+- Convert JSON strings/JSONB arrays to `Struct` safely; invalid stored JSON should surface as an internal data error, not be ignored.
+- Map known source document type strings to the proto enum and leave unknown values unset/unspecified safely.
+- Preserve optional scalar presence, including explicitly supplied `false` and `0`.
+- Do not use an interface split that makes newly added RPCs silently return `Unimplemented` in production.
+
+If the contract is locally edited but not released, a clearly marked temporary `replace github.com/<org>/<spec> => ../<spec>` is acceptable for local development only. Before merge/release, replace it with a published immutable contract version and remove the local replace.
+
+## Phase 4 — Tests first, then implementation
+
+Extend the service’s existing Go tests; do not add a framework.
+
+Minimum unit coverage:
+
+- every handler forwards the right request values and maps responses;
+- invalid required inputs and invalid JSON/range values;
+- `NotFound` versus `Internal` status mapping;
+- scoped active reads/lists exclude deleted rows;
+- unscoped direct reads/names retain source behavior;
+- nested relation mapping: parent → child → grandchild;
+- documents exclude `deleted_at IS NOT NULL`;
+- `false` optional boolean remains present and false;
+- update honors only allowed fields;
+- upsert/add/delete transaction/error behavior.
+
+Run at least:
+
+```sh
+gofmt -w <changed-go-files>
+go test -race ./...
+go vet ./...
+go build ./...
+```
+
+## Phase 5 — Reproducible local Docker verification
+
+The target service must own a repeatable local path that starts its own data dependencies.
+
+Compose requirements:
+
+1. Use PostgreSQL 18 with pgvector if existing migrations require `vector`.
+2. Healthcheck PostgreSQL.
+3. Run pinned dbmate in a disposable migration container against the canonical migration checkout.
+4. Run a deterministic, idempotent seed after migrations.
+5. Start the API only after seed success.
+6. Use disposable grpcurl container(s), not a host grpcurl prerequisite.
+7. Retain `x-api-key` validation on every RPC test.
+
+Seed at least:
+
+- one active and one deleted parent/agent in the same business;
+- relation rows covering every complex nested response;
+- one active and one soft-deleted document;
+- a second business for scope-negative tests;
+- dedicated disposable IDs for mutation tests.
+
+Use a Bash verification script when arrays or robust argument handling are needed. Do not invoke it as `sh script` if it uses Bash syntax.
+
+grpcurl positional order is important:
+
+```sh
+grpcurl [flags] TARGET SERVICE/METHOD
+```
+
+Example:
+
+```sh
+docker compose --profile tools run --rm --no-deps grpcurl \
+  -plaintext -H 'x-api-key: dev-key' \
+  -d '{"agent_id":"..."}' \
+  api:50051 cekat.example.v1.Service/GetAgent
+```
+
+Do not use reflection `list` alone as an auth test: reflection can bypass a unary service interceptor. Prove bad authentication against an actual unary RPC.
+
+Provide Make targets equivalent to:
+
+```sh
+make compose-build
+make compose-up
+make db-reset
+make verify-ready
+make verify
+make compose-down
+```
+
+`make verify` must start from a clean volume and invoke **every old and new RPC one by one**, asserting:
+
+- valid authentication and wrong-key failure on an actual RPC;
+- scoped/unscoped behavior;
+- deleted-parent behavior;
+- active/deleted child filtering;
+- nested relations;
+- invalid input;
+- each mutation’s result and cleanup/rollback of test rows.
+
+### Local sibling modules
+
+When a temporary local Go `replace` points to sibling repositories, a normal service-root Docker context cannot see them. For local Compose only:
+
+- build from the common parent context;
+- use BuildKit `additional_contexts` for each sibling module;
+- copy each named context in a dedicated local builder stage;
+- apply builder-only `go mod edit -replace=...` after source copy if `COPY` overwrites `go.mod`;
+- keep the standard service-root Docker build target intact for released dependencies/CI;
+- remove the local contexts and builder-only replacements when the contract/module is released.
+
+## Phase 6 — Required final checks
+
+Run and report exact results:
+
+```sh
+# shared contract
+make generate
+make lint
+make build
+make check-graph
+make breaking
+
+# database migration
+<fresh dbmate up / rollback / up>
+
+# target service
+go test -race ./...
+go vet ./...
+go build ./...
+docker compose config --quiet
+make verify
+
+git diff --check
+```
+
+If a check cannot run, state the exact blocker, command, and what did run. Do not claim endpoint verification passed until the verification script actually completed successfully.
+
+## Completion report
+
+Return only:
+
+1. RPC-to-source-helper mapping.
+2. Files changed, grouped by repository.
+3. Behavior compatibility decisions.
+4. Exact verification commands and results.
+5. Remaining release handoff, such as publishing the shared contract and removing temporary local Go replaces.
+6. Any blocker or deliberately skipped work.
+
+Do not commit, open a PR, modify source callers, or clean unrelated working-tree changes unless explicitly requested.

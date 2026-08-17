@@ -1,0 +1,112 @@
+{
+  "$schema": "https://raw.githubusercontent.com/earendil-works/coding-agent/main/src/modes/interactive/theme/theme-schema.json",
+  "name": "halcyon",
+
+  "//": "Halcyon — committed teal on a true near-black neutral. Built for long sessions: zero-chroma backgrounds, one saturated accent, body text aimed at ≥7:1 contrast. Anti-AI-slop register: not navy SaaS, not cream-warm, not Tokyo Night.",
+
+  "vars": {
+    "_layer0":      "#0b0d0e",
+    "_layer1":      "#111416",
+    "_layer2":      "#161a1d",
+    "_layer3":      "#1c2125",
+    "_layerSelect": "#222a30",
+
+    "_text":        "#e6e8eb",
+    "_textStrong":  "#f5f7f9",
+    "_muted":       "#9ba3ad",
+    "_dim":         "#6b7280",
+    "_dimmer":      "#3a4046",
+    "_dimmest":     "#23282d",
+
+    "_teal":        "#5eead4",
+    "_tealBright":  "#7df3dc",
+    "_tealDeep":    "#2dd4bf",
+    "_tealDim":     "#0d9488",
+
+    "_sage":        "#86efac",
+    "_coral":       "#fb7185",
+    "_amber":       "#fcd34d",
+
+    "_userTint":    "#13191c",
+    "_toolBg":      "#15191d",
+    "_toolOk":      "#10221d",
+    "_toolErr":     "#241416",
+
+    "_kw":          "#7dd3fc",
+    "_fn":          "#5eead4",
+    "_str":         "#86efac",
+    "_num":         "#fcd34d",
+    "_type":        "#c4b5fd",
+    "_var":         "#e6e8eb",
+    "_op":          "#9ba3ad"
+  },
+
+  "colors": {
+    "accent":           "_teal",
+    "border":           "_dimmer",
+    "borderAccent":     "_tealDeep",
+    "borderMuted":      "_dimmest",
+
+    "success":          "_sage",
+    "error":            "_coral",
+    "warning":          "_amber",
+
+    "muted":            "_muted",
+    "dim":              "_dim",
+    "text":             "_text",
+    "thinkingText":     "_muted",
+
+    "selectedBg":       "_layerSelect",
+    "userMessageBg":    "_userTint",
+    "userMessageText":  "_textStrong",
+    "customMessageBg":  "_layer2",
+    "customMessageText":"_text",
+    "customMessageLabel":"_tealBright",
+
+    "toolPendingBg":    "_toolBg",
+    "toolSuccessBg":    "_toolOk",
+    "toolErrorBg":      "_toolErr",
+    "toolTitle":        "_tealBright",
+    "toolOutput":       "_muted",
+
+    "mdHeading":        "_textStrong",
+    "mdLink":           "_teal",
+    "mdLinkUrl":        "_dim",
+    "mdCode":           "_tealBright",
+    "mdCodeBlock":      "_text",
+    "mdCodeBlockBorder":"_dimmer",
+    "mdQuote":          "_muted",
+    "mdQuoteBorder":    "_tealDim",
+    "mdHr":             "_dimmest",
+    "mdListBullet":     "_teal",
+
+    "toolDiffAdded":    "_sage",
+    "toolDiffRemoved":  "_coral",
+    "toolDiffContext":  "_dim",
+
+    "syntaxComment":    "_dim",
+    "syntaxKeyword":    "_kw",
+    "syntaxFunction":   "_fn",
+    "syntaxVariable":   "_var",
+    "syntaxString":     "_str",
+    "syntaxNumber":     "_num",
+    "syntaxType":       "_type",
+    "syntaxOperator":   "_op",
+    "syntaxPunctuation":"_muted",
+
+    "thinkingOff":      "_dimmest",
+    "thinkingMinimal":  "_dimmer",
+    "thinkingLow":      "_tealDim",
+    "thinkingMedium":   "_tealDeep",
+    "thinkingHigh":     "_teal",
+    "thinkingXhigh":    "_tealBright",
+
+    "bashMode":         "_amber"
+  },
+
+  "export": {
+    "pageBg":  "#0b0d0e",
+    "cardBg":  "#111416",
+    "infoBg":  "#1c2125"
+  }
+}

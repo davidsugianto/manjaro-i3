@@ -1,0 +1,106 @@
+{
+  "$schema": "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
+  "name": "aurora",
+
+  "//": "Aurora — a futuristic AI command-deck palette. Neon cyan primary sweeping to violet, on a deep space-black canvas. Zero-chroma dark neutrals keep long sessions calm; the cyan→violet ramp (toolTitle→accent→mdLink→syntaxType→mdCode→customMessageLabel) is what aurora.ts uses for gradient wordmarks, rules, and meters. Body text aimed at ≥12:1 contrast.",
+
+  "vars": {
+    "_void":     "#05070e",
+    "_l1":       "#0a0e1a",
+    "_l2":       "#101627",
+    "_l3":       "#17203a",
+    "_sel":      "#1d2a4d",
+
+    "_fg":       "#e9edf7",
+    "_fgStrong": "#f7f9fe",
+    "_muted":    "#98a2ba",
+    "_dim":      "#5a6580",
+    "_dimmer":   "#313c58",
+    "_dimmest":  "#1a2237",
+
+    "_cyan":       "#35e6ff",
+    "_cyanBright": "#7ff2ff",
+    "_cyanDeep":   "#0bb6d6",
+    "_sky":        "#4aa8ff",
+    "_indigo":     "#7c86ff",
+    "_periwinkle": "#9a8dff",
+    "_violet":     "#b98cff",
+    "_magenta":    "#ff5db1",
+
+    "_mint":     "#38efa6",
+    "_amber":    "#ffb84d",
+    "_rose":     "#ff5c78",
+
+    "_okBg":     "#0c2018",
+    "_errBg":    "#24101a"
+  },
+
+  "colors": {
+    "accent":             "_cyan",
+    "border":             "_dimmer",
+    "borderAccent":       "_cyanDeep",
+    "borderMuted":        "_dimmest",
+
+    "success":            "_mint",
+    "error":              "_rose",
+    "warning":            "_amber",
+
+    "muted":              "_muted",
+    "dim":                "_dim",
+    "text":               "",
+    "thinkingText":       "_muted",
+
+    "selectedBg":         "_sel",
+    "userMessageBg":      "_l1",
+    "userMessageText":    "_fgStrong",
+    "customMessageBg":    "_l2",
+    "customMessageText":  "_fg",
+    "customMessageLabel": "_violet",
+
+    "toolPendingBg":      "_l1",
+    "toolSuccessBg":      "_okBg",
+    "toolErrorBg":        "_errBg",
+    "toolTitle":          "_cyanBright",
+    "toolOutput":         "_muted",
+
+    "mdHeading":          "_cyan",
+    "mdLink":             "_sky",
+    "mdLinkUrl":          "_dim",
+    "mdCode":             "_periwinkle",
+    "mdCodeBlock":        "",
+    "mdCodeBlockBorder":  "_dimmer",
+    "mdQuote":            "_muted",
+    "mdQuoteBorder":      "_cyanDeep",
+    "mdHr":               "_dimmest",
+    "mdListBullet":       "_violet",
+
+    "toolDiffAdded":      "_mint",
+    "toolDiffRemoved":    "_rose",
+    "toolDiffContext":    "_dim",
+
+    "syntaxComment":      "_dim",
+    "syntaxKeyword":      "_magenta",
+    "syntaxFunction":     "_cyan",
+    "syntaxVariable":     "_fg",
+    "syntaxString":       "_mint",
+    "syntaxNumber":       "_amber",
+    "syntaxType":         "_indigo",
+    "syntaxOperator":     "_muted",
+    "syntaxPunctuation":  "_muted",
+
+    "thinkingOff":        "_dimmest",
+    "thinkingMinimal":    "_dimmer",
+    "thinkingLow":        "_sky",
+    "thinkingMedium":     "_cyan",
+    "thinkingHigh":       "_violet",
+    "thinkingXhigh":      "_magenta",
+
+    "bashMode":           "_amber"
+  },
+
+  "export": {
+    "pageBg":  "#05070e",
+    "cardBg":  "#0a0e1a",
+    "infoBg":  "#17203a"
+  }
+}

@@ -167,12 +167,22 @@ if (( DO_LINKS )); then
     link kitty                  "$HOME/.config/kitty"
     link xterm/Xresources       "$HOME/.Xresources"
 
+    # --- editor ---
+    link nvim                   "$HOME/.config/nvim"
+
     # --- shell ---
     link zsh/zshrc              "$HOME/.zshrc"
     link zsh/aliases.zsh        "$HOME/.config/zsh/aliases.zsh"
     link zsh/functions.zsh      "$HOME/.config/zsh/functions.zsh"
     # Cloud/DevOps toolchain: completions, tool env, kubectl/tf/docker aliases.
     link zsh/completions.zsh    "$HOME/.config/zsh/completions.zsh"
+
+    # --- pi agent ---
+    link pi/agent/extensions    "$HOME/.pi/agent/extensions"
+    link pi/agent/prompts       "$HOME/.pi/agent/prompts"
+    link pi/agent/skills        "$HOME/.pi/agent/skills"
+    link pi/agent/themes        "$HOME/.pi/agent/themes"
+    link pi/agent/keybindings.json "$HOME/.pi/agent/keybindings.json"
 
     # --- XDG autostart overrides ---
     # Suppress the tray applets that polybar now covers natively. These are
@@ -336,7 +346,7 @@ cat <<EOF
       2. Run  p10k configure  once to generate your zsh prompt.
 
       3. Drop wallpapers in ~/Pictures/Wallpapers — one is picked at random
-         on login. Until then you get a flat TokyoNight background.
+         on login. Until then you get a flat Catppuccin Mocha background.
 
     Keybindings: see README.md, or press \$mod+Shift+/ for i3's own help.
     Backups from this run: ${BACKUP}

@@ -1,0 +1,193 @@
+import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@earendil-works/pi-coding-agent";
+
+import { loadConfig, saveConfig, type VulcanConfig } from "./config.js";
+import { VulcanEditor } from "./editor.js";
+import { installFooter, type TurnState } from "./footer.js";
+import { installHud, installSplash, takeSnapshot } from "./splash.js";
+
+const WORK_FRAMES = ["⚒··", "·⚒·", "··⚒", "·⚒·"];
+
+function installWorkingIndicator(ctx: ExtensionContext): void {
+  ctx.ui.setWorkingIndicator({
+    frames: WORK_FRAMES,
+    intervalMs: 90,
+  });
+}
+
+function clearUi(ctx: ExtensionContext): void {
+  ctx.ui.setHeader(undefined);
+  ctx.ui.setFooter(undefined);
+  ctx.ui.setEditorComponent(undefined);
+  ctx.ui.setWorkingIndicator();
+}
+
+function installUi(
+  pi: ExtensionAPI,
+  ctx: ExtensionContext,
+  cfg: VulcanConfig,
+  state: TurnState,
+  opts: { showSplash: boolean; installIndicator: boolean; isIdle: () => boolean },
+): void {
+  if (!ctx.hasUI) return;
+
+  ctx.ui.setEditorComponent((tui, theme, keybindings) =>
+    new VulcanEditor(tui, theme, keybindings, {
+      getTheme: () => ctx.ui.theme,
+      isIdle: opts.isIdle,
+      shutdown: () => ctx.shutdown(),
+      heatFrameEnabled: () => cfg.heatFrame,
+    }),
+  );
+
+  installFooter(pi, ctx, state, cfg);
+
+  if (opts.showSplash && cfg.splash) {
+    installSplash(ctx, takeSnapshot());
+  } else {
+    installHud(ctx);
+  }
+
+  if (opts.installIndicator) {
+    installWorkingIndicator(ctx);
+  }
+}
+
+function statusLine(cfg: VulcanConfig): string {
+  return `enabled=${cfg.enabled} splash=${cfg.splash} heatFrame=${cfg.heatFrame} footerSplitWidth=${cfg.footerSplitWidth}`;
+}
+
+export default function (pi: ExtensionAPI): void {
+  let cfg = loadConfig();
+  let activeCtx: ExtensionContext | undefined;
+  let isWorking = false;
+
+  const turnState: TurnState = {
+    turnStartedAt: 0,
+    lastTurnMs: 0,
+  };
+
+  pi.on("session_start", (event, ctx) => {
+    activeCtx = ctx;
+    isWorking = false;
+    turnState.turnStartedAt = 0;
+    turnState.lastTurnMs = 0;
+
+    if (!ctx.hasUI) return;
+    if (!cfg.enabled) {
+      clearUi(ctx);
+      return;
+    }
+
+    const showSplash = event.reason === "startup";
+    const installIndicator = event.reason !== "reload";
+
+    installUi(pi, ctx, cfg, turnState, {
+      showSplash,
+      installIndicator,
+      isIdle: () => !isWorking && ctx.isIdle(),
+    });
+  });
+
+  pi.on("agent_start", () => {
+    isWorking = true;
+    turnState.turnStartedAt = Date.now();
+  });
+
+  pi.on("agent_end", () => {
+    const now = Date.now();
+    if (turnState.turnStartedAt > 0) {
+      turnState.lastTurnMs = Math.max(0, now - turnState.turnStartedAt);
+      turnState.turnStartedAt = 0;
+    }
+
+    isWorking = false;
+
+    if (cfg.enabled && activeCtx?.hasUI) {
+      installHud(activeCtx);
+    }
+  });
+
+  pi.on("session_shutdown", () => {
+    activeCtx = undefined;
+    isWorking = false;
+    turnState.turnStartedAt = 0;
+  });
+
+  pi.registerCommand("vulcan", {
+    description: "Tune Vulcan UI (/vulcan on|off|splash on|off|heat on|off|split <n>|status)",
+    handler: async (args: string, ctx: ExtensionCommandContext) => {
+      const tokens = args.trim().split(/\s+/).filter(Boolean);
+      const cmd = (tokens[0] ?? "status").toLowerCase();
+      const val = (tokens[1] ?? "").toLowerCase();
+
+      const persist = (): void => {
+        saveConfig(cfg);
+      };
+
+      switch (cmd) {
+        case "status":
+          ctx.ui.notify(`vulcan: ${statusLine(cfg)}`, "info");
+          return;
+
+        case "on":
+          cfg.enabled = true;
+          persist();
+          if (ctx.hasUI) {
+            installUi(pi, ctx, cfg, turnState, {
+              showSplash: false,
+              installIndicator: true,
+              isIdle: () => !isWorking && ctx.isIdle(),
+            });
+          }
+          ctx.ui.notify("vulcan: enabled", "info");
+          return;
+
+        case "off":
+          cfg.enabled = false;
+          persist();
+          if (ctx.hasUI) clearUi(ctx);
+          ctx.ui.notify("vulcan: disabled", "info");
+          return;
+
+        case "splash":
+          if (val !== "on" && val !== "off") {
+            ctx.ui.notify("Usage: /vulcan splash on|off", "warning");
+            return;
+          }
+          cfg.splash = val === "on";
+          persist();
+          ctx.ui.notify(`vulcan: splash ${val}`, "info");
+          return;
+
+        case "heat":
+        case "frame":
+          if (val !== "on" && val !== "off") {
+            ctx.ui.notify("Usage: /vulcan heat on|off", "warning");
+            return;
+          }
+          cfg.heatFrame = val === "on";
+          persist();
+          ctx.ui.notify(`vulcan: heat frame ${val}`, "info");
+          return;
+
+        case "split": {
+          const n = Number(tokens[1]);
+          if (!Number.isFinite(n) || n < 80 || n > 260) {
+            ctx.ui.notify("Usage: /vulcan split <80..260>", "warning");
+            return;
+          }
+          cfg.footerSplitWidth = Math.round(n);
+          persist();
+          ctx.ui.notify(`vulcan: footer split width ${cfg.footerSplitWidth}`, "info");
+          return;
+        }
+
+        default:
+          ctx.ui.notify(
+            "Usage: /vulcan [status|on|off|splash on|off|heat on|off|split <80..260>]",
+            "warning",
+          );
+      }
+    },
+  });
+}

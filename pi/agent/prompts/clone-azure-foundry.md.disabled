@@ -1,0 +1,84 @@
+---
+description: Clone an Azure AI Foundry resource with field-by-field verification
+argument-hint: "<source-resource> <target-resource> [resource-groups/options]"
+---
+# Clone Azure AI Foundry Resource
+
+Clone an Azure AI Foundry / Cognitive Services account using Azure CLI and ARM REST calls. Do not modify repository files unless the user explicitly asks. Treat the source as read-only.
+
+Arguments supplied by the user:
+
+$@
+
+## Operating rules
+
+- Use `az` CLI for all Azure inspection and mutations.
+- Never delete, overwrite, or update the source resource.
+- Never copy, print, or expose API keys, connection strings, secrets, or tokens.
+- Do not guess resource groups, locations, model versions, capacities, provider metadata, or policy definitions. Query the source and report ambiguity.
+- Preserve source names only where Azure allows it. Resource IDs, endpoints, identities, keys, and generated metadata must differ on the target.
+- Do not claim an exact clone if a child resource, data-plane asset, RBAC assignment, provider onboarding setting, or deployment field was not verified.
+- Use temporary files for snapshots and clean them up. Do not commit snapshots or generated files.
+- Make operations idempotent: detect an existing target first and never silently replace it.
+- If a mutation partially succeeds, stop before destructive recovery, summarize what succeeded, and give the exact safe next command.
+
+## Phase 1 — Resolve and inspect
+
+1. Parse the arguments. Resolve:
+   - source subscription, resource group, account name, and optional project name;
+   - target subscription, resource group, account name, location, and optional project name.
+2. If required source or target information is missing, ask for it and stop. Do not infer the target resource group from a similarly named group.
+3. Verify Azure login and active subscription with `az account show`. If subscriptions are supplied, verify both explicitly.
+4. Locate the source with `az cognitiveservices account show` or `az resource show`. Confirm it is an Azure AI Services / Foundry account.
+5. Check whether the target already exists. Check name/custom-domain availability before any mutation.
+6. Snapshot and inspect, without secrets:
+   - account `kind`, `location`, `sku`, `tags`, `identity` type, custom subdomain;
+   - public network access, local auth, network ACLs, private endpoints, encryption, storage, outbound restrictions, project-management settings, capabilities, locks, diagnostic settings;
+   - projects and their configuration;
+   - all deployments, including model format/name/version, SKU name/capacity, RAI policy, version-upgrade option, service tier, dynamic throttling, scale settings, spillover/parent deployment, call-rate limits, provisioning state, and provider metadata when exposed;
+   - custom RAI policies and their complete content-filter definitions;
+   - project connections and other discoverable child resources;
+   - direct and inherited RBAC assignments, comparing scopes and principal IDs without exposing credentials.
+7. Output this numbered plan and stop:
+   1. Smallest set of Azure resources/operations required.
+   2. Fields that must remain unchanged and fields that must necessarily differ.
+   3. Risks, unsupported child assets, quota/provider checks, and blockers.
+   4. Verification and smoke-test surface.
+
+Wait for the user to say `go`, `continue`, or another unambiguous approval before any create/update operation.
+
+## Phase 2 — Clone after approval
+
+1. Re-check the target does not exist, the source is still readable, and the active subscription/resource groups are correct.
+2. Create the target account with the source's compatible `kind`, SKU, location, custom subdomain, identity, project-management setting, tags, and network posture. Do not copy the source identity or secrets.
+3. Apply account-level settings that were not accepted by `az cognitiveservices account create` using a narrowly scoped `az resource update` or ARM REST request. Re-read and verify them immediately.
+4. Create the target default project with the matching project name/configuration and a new system-assigned identity if the source has one.
+5. Recreate every source custom RAI policy before creating or updating deployments. Copy the policy properties exactly, including base policy, mode, type, and every content-filter field. Built-in policies such as `Microsoft.DefaultV2` are not substitutes for a source custom policy.
+6. Recreate deployments from the captured source snapshot. Preserve deployment names and every supported field. Use `az cognitiveservices account deployment create` where sufficient; use an ARM `PUT` when the CLI cannot preserve fields such as RAI policy, service tier, version-upgrade option, or provider metadata.
+7. For provider-gated models such as Anthropic, preserve the source provider metadata if available. Do not fabricate organization/country/industry values. If Azure requires provider onboarding or rejects the payload, leave the source untouched, report the exact blocker, and continue only with explicitly safe independent operations.
+8. Apply custom RAI policy assignments after the target policy exists. Re-read each deployment after every update; do not use `Microsoft.DefaultV2` merely because it is the CLI default.
+9. Recreate only child resources and project assets supported by the queried Azure APIs. For unsupported data-plane assets, connections, agents, files, indexes, evaluations, or secrets, report them as not cloned rather than claiming success.
+10. Handle partial failures explicitly. Record successful and failed operations, provisioning states, Azure error messages, and a safe resume path.
+
+## Phase 3 — Verify
+
+Run a fresh source/target comparison and report exact matches, expected identity/ID/endpoint differences, and remaining gaps. Compare at minimum:
+
+- account properties and capabilities;
+- network, encryption, storage, locks, diagnostics, and tags;
+- project properties;
+- custom RAI policy JSON and all content filters;
+- deployment set and every preserved deployment field;
+- model versions, capacities, SKU names, RAI assignments, and provisioning states;
+- supported child resources and project assets;
+- RBAC assignments, clearly distinguishing inherited from direct scope.
+
+Run non-secret smoke checks where possible: target endpoint reachability, project access, chat completion, embeddings, and required provider deployments. Never print credentials. Finish with:
+
+- `Cloned`
+- `Expected differences`
+- `Not cloned / unverified`
+- `Blockers`
+- exact follow-up commands, if any
+
+Do not modify application configuration or redirect clients unless the user explicitly requests it.

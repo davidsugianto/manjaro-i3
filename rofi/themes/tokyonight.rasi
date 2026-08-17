@@ -1,0 +1,29 @@
+/* TokyoNight (Night) — backup palette.
+ * Same role names as colors.rasi; swap the @import in rofi/config.rasi.
+ */
+
+* {
+    bg          : #1a1b26;
+    bg-alt      : #16161e;
+    bg-select   : #283457;
+
+    fg          : #c0caf5;
+    fg-alt      : #a9b1d6;
+    muted       : #565f89;
+
+    accent      : #7aa2f7;
+    accent-alt  : #bb9af7;
+
+    ok          : #9ece6a;
+    warn        : #e0af68;
+    urgent      : #f7768e;
+
+
+    /* rofi-theme(5): a reference cannot be a *subpart* of a property value,
+     * so `highlight: bold @accent` is a syntax error. The whole composite has
+     * to be defined here and referenced as a unit. */
+    highlight-style : bold #7aa2f7;
+
+    background-color : transparent;
+    text-color       : @fg;
+}

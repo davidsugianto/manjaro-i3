@@ -46,7 +46,7 @@ fi
 
 if (( count > 0 )); then
     # %{F...} is a polybar formatting tag — colour just this state blue.
-    echo "%{F#7aa2f7}${ICON_CONN} ${count}%{F-}"
+    echo "%{F#89b4fa}${ICON_CONN} ${count}%{F-}"
 else
     echo "$ICON_ON"
 fi

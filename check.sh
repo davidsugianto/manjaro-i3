@@ -44,7 +44,7 @@ done
 
 zsh_bad=0
 if command -v zsh >/dev/null; then
-    for f in zsh/zshrc zsh/aliases.zsh zsh/functions.zsh zsh/completions.zsh colors/tokyonight.sh; do
+    for f in zsh/zshrc zsh/aliases.zsh zsh/functions.zsh zsh/completions.zsh colors/tokyonight.sh colors/catppuccin-mocha.sh; do
         zsh -n "$f" 2>/dev/null || { fail "zsh -n: $f"; zsh_bad=1; }
     done
     (( zsh_bad )) || pass "all zsh files parse"

@@ -8,50 +8,50 @@
 ! usable rather than merely present.
 
 ! ---------------------------------------------------------------------------
-! TokyoNight (Night)
+! Catppuccin Mocha
 !
 ! Defined once as named resources, then referenced below. Change these eleven
 ! lines to re-theme xterm; the backup palettes are at the bottom.
 ! ---------------------------------------------------------------------------
 
-#define TN_BG      #1a1b26
-#define TN_BG_ALT  #16161e
-#define TN_FG      #c0caf5
-#define TN_FG_ALT  #a9b1d6
-#define TN_MUTED   #565f89
-#define TN_ACCENT  #7aa2f7
-#define TN_URGENT  #f7768e
+#define CM_BG      #1e1e2e
+#define CM_BG_ALT  #181825
+#define CM_FG      #cdd6f4
+#define CM_FG_ALT  #bac2de
+#define CM_MUTED   #6c7086
+#define CM_ACCENT  #89b4fa
+#define CM_URGENT  #f38ba8
 
-*background:            TN_BG
-*foreground:            TN_FG
-*cursorColor:           TN_FG
-*highlightColor:        #283457
-*colorUL:               TN_ACCENT
-*colorBD:               TN_FG
+*background:            CM_BG
+*foreground:            CM_FG
+*cursorColor:           CM_FG
+*highlightColor:        #585b70
+*colorUL:               CM_ACCENT
+*colorBD:               CM_FG
 
 ! normal (0-7)
-*color0:                #15161e
-*color1:                #f7768e
-*color2:                #9ece6a
-*color3:                #e0af68
-*color4:                #7aa2f7
-*color5:                #bb9af7
-*color6:                #7dcfff
-*color7:                #a9b1d6
+*color0:                #45475a
+*color1:                #f38ba8
+*color2:                #a6e3a1
+*color3:                #f9e2af
+*color4:                #89b4fa
+*color5:                #f5c2e7
+*color6:                #94e2d5
+*color7:                #bac2de
 
 ! bright (8-15)
-*color8:                #414868
-*color9:                #ff899d
-*color10:               #9fe044
-*color11:               #faba4a
-*color12:               #8db0ff
-*color13:               #c7a9ff
-*color14:               #a4daff
-*color15:               #c0caf5
+*color8:                #585b70
+*color9:                #f38ba8
+*color10:               #a6e3a1
+*color11:               #f9e2af
+*color12:               #89b4fa
+*color13:               #cba6f7
+*color14:               #94e2d5
+*color15:               #a6adc8
 
-! extended — orange and a deeper red, used by some TUIs
-*color16:               #ff9e64
-*color17:               #db4b4b
+! extended — peach and a deeper red, used by some TUIs
+*color16:               #fab387
+*color17:               #eba0ac
 
 ! ---------------------------------------------------------------------------
 ! xterm
@@ -86,8 +86,8 @@ XTerm*scrollKey:                true
 
 XTerm*cursorBlink:              false
 XTerm*cursorUnderLine:          false
-XTerm*pointerColor:             TN_ACCENT
-XTerm*pointerColorBackground:   TN_BG
+XTerm*pointerColor:             CM_ACCENT
+XTerm*pointerColorBackground:   CM_BG
 ! Hide the mouse pointer while typing.
 XTerm*pointerMode:              2
 
@@ -152,12 +152,18 @@ Xcursor.theme:                  breeze-cursors
 Xcursor.size:                   24
 
 ! i3lock / xscreensaver-style dialogs pick these up.
-*Dialog*background:             TN_BG
-*Dialog*foreground:             TN_FG
+*Dialog*background:             CM_BG
+*Dialog*foreground:             CM_FG
 
 ! ---------------------------------------------------------------------------
-! backup palettes — comment out the TokyoNight block above and uncomment one
+! backup palettes — comment out the Catppuccin Mocha block above and
+! uncomment one
 ! ---------------------------------------------------------------------------
+!
+! TokyoNight (Night):
+!   background #1a1b26  foreground #c0caf5
+!   color0-7   #15161e #f7768e #9ece6a #e0af68 #7aa2f7 #bb9af7 #7dcfff #a9b1d6
+!   color8-15  #414868 #ff899d #9fe044 #faba4a #8db0ff #c7a9ff #a4daff #c0caf5
 !
 ! Dracula:
 !   background #282a36  foreground #f8f8f2

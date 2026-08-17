@@ -1,0 +1,98 @@
+{
+  "$schema": "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
+  "name": "noctiluca",
+
+  "vars": {
+    "bg":          "#16122a",
+    "bgRaised":    "#1e1a35",
+    "bgTool":      "#1a1630",
+    "bgUser":      "#1d1932",
+    "bgCustom":    "#1b1730",
+    "bgSelected":  "#2d2550",
+
+    "magenta":     "#d946ef",
+    "magentaDim":  "#9333ea",
+    "magentaPale": "#ede9fe",
+    "magentaMid":  "#c084fc",
+    "fuchsia":     "#f0abfc",
+
+    "text":        "#ede9fe",
+    "muted":       "#a897c8",
+    "dim":         "#7060a0",
+    "dimDark":     "#3d2e68",
+
+    "rust":        "#f87171",
+    "amber":       "#fbbf24",
+    "sage":        "#6ee7b7",
+
+    "ironBorder":  "#3d2e68",
+    "midBorder":   "#6d3aad",
+    "brightBorder":"#a855f7"
+  },
+
+  "colors": {
+    "accent":          "magentaMid",
+    "border":          "ironBorder",
+    "borderAccent":    "fuchsia",
+    "borderMuted":     "dimDark",
+    "success":         "sage",
+    "error":           "rust",
+    "warning":         "amber",
+    "muted":           "muted",
+    "dim":             "dim",
+    "text":            "text",
+    "thinkingText":    "muted",
+
+    "selectedBg":      "bgSelected",
+    "userMessageBg":   "bgUser",
+    "userMessageText": "text",
+    "customMessageBg": "bgCustom",
+    "customMessageText": "text",
+    "customMessageLabel": "magentaPale",
+    "toolPendingBg":   "bgTool",
+    "toolSuccessBg":   "#1a2e28",
+    "toolErrorBg":     "#2e1a1a",
+    "toolTitle":       "magentaPale",
+    "toolOutput":      "muted",
+
+    "mdHeading":       "fuchsia",
+    "mdLink":          "magentaMid",
+    "mdLinkUrl":       "dim",
+    "mdCode":          "magentaPale",
+    "mdCodeBlock":     "text",
+    "mdCodeBlockBorder": "ironBorder",
+    "mdQuote":         "muted",
+    "mdQuoteBorder":   "dim",
+    "mdHr":            "dimDark",
+    "mdListBullet":    "magentaMid",
+
+    "toolDiffAdded":   "sage",
+    "toolDiffRemoved": "rust",
+    "toolDiffContext": "dim",
+
+    "syntaxComment":   "#6b5e8a",
+    "syntaxKeyword":   "#c084fc",
+    "syntaxFunction":  "#e879f9",
+    "syntaxVariable":  "#d8b4fe",
+    "syntaxString":    "#86efac",
+    "syntaxNumber":    "#f9a8d4",
+    "syntaxType":      "#a855f7",
+    "syntaxOperator":  "#c084fc",
+    "syntaxPunctuation": "muted",
+
+    "thinkingOff":     "dimDark",
+    "thinkingMinimal": "ironBorder",
+    "thinkingLow":     "midBorder",
+    "thinkingMedium":  "magentaDim",
+    "thinkingHigh":    "magentaMid",
+    "thinkingXhigh":   "fuchsia",
+
+    "bashMode":        "fuchsia"
+  },
+
+  "export": {
+    "pageBg":  "#16122a",
+    "cardBg":  "#1e1a35",
+    "infoBg":  "#2d2550"
+  }
+}

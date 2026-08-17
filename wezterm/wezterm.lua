@@ -5,25 +5,48 @@
 -- the packaged build — if you upgrade to a newer release everything here
 -- still applies.
 --
--- Theme lives in ONE place: change THEME below to "TokyoNight", "Dracula" or
--- "GruvboxDark".
+-- Theme lives in ONE place: change THEME below to "CatppuccinMocha",
+-- "TokyoNight", "Dracula" or "GruvboxDark".
 
 local wezterm = require("wezterm")
 local act = wezterm.action
 
 local config = wezterm.config_builder()
 
-local THEME = "TokyoNight"
+local THEME = "CatppuccinMocha"
 
 -- ---------------------------------------------------------------------------
 -- colours
 --
--- Defined explicitly rather than using the built-in "Tokyo Night" scheme, so
--- the terminal matches polybar/rofi/dunst exactly. Values are upstream
--- folke/tokyonight.nvim.
+-- Defined explicitly rather than using a built-in scheme, so the terminal
+-- matches polybar/rofi/dunst exactly. Values are upstream
+-- catppuccin/catppuccin (Mocha) and folke/tokyonight.nvim.
 -- ---------------------------------------------------------------------------
 
 config.color_schemes = {
+	["CatppuccinMocha"] = {
+		foreground = "#cdd6f4",
+		background = "#1e1e2e",
+		cursor_bg = "#f5e0dc",
+		cursor_fg = "#1e1e2e",
+		cursor_border = "#f5e0dc",
+		selection_fg = "#cdd6f4",
+		selection_bg = "#585b70",
+		scrollbar_thumb = "#313244",
+		split = "#89b4fa",
+		ansi = { "#45475a", "#f38ba8", "#a6e3a1", "#f9e2af", "#89b4fa", "#f5c2e7", "#94e2d5", "#bac2de" },
+		brights = { "#585b70", "#f38ba8", "#a6e3a1", "#f9e2af", "#89b4fa", "#cba6f7", "#94e2d5", "#a6adc8" },
+		indexed = { [16] = "#fab387", [17] = "#eba0ac" },
+		tab_bar = {
+			background = "#181825",
+			active_tab = { bg_color = "#89b4fa", fg_color = "#181825", intensity = "Bold" },
+			inactive_tab = { bg_color = "#313244", fg_color = "#7f849c" },
+			inactive_tab_hover = { bg_color = "#585b70", fg_color = "#cdd6f4" },
+			new_tab = { bg_color = "#181825", fg_color = "#7f849c" },
+			new_tab_hover = { bg_color = "#585b70", fg_color = "#cdd6f4" },
+		},
+	},
+
 	["TokyoNight"] = {
 		foreground = "#c0caf5",
 		background = "#1a1b26",
@@ -112,9 +135,13 @@ config.cell_width = 1.0
 config.harfbuzz_features = { "calt=0", "clig=0", "liga=0" }
 
 config.font_rules = {
-	-- Italic comments render as actual italics rather than a slanted mono.
+	-- Victor Mono's italic is properly cursive (JetBrains Mono's is just a
+	-- slant) — used for the italic faces only, so comments/keywords/loops
+	-- stand out instead of the whole buffer looking hand-written.
 	{ intensity = "Normal", italic = true,
-	  font = wezterm.font({ family = "JetBrainsMono Nerd Font", weight = "Medium", style = "Italic" }) },
+	  font = wezterm.font({ family = "VictorMono Nerd Font", weight = "Medium", style = "Italic" }) },
+	{ intensity = "Bold", italic = true,
+	  font = wezterm.font({ family = "VictorMono Nerd Font", weight = "Bold", style = "Italic" }) },
 	{ intensity = "Bold", italic = false,
 	  font = wezterm.font({ family = "JetBrainsMono Nerd Font", weight = "Bold" }) },
 }
@@ -148,7 +175,7 @@ config.visual_bell = {
 	fade_out_function = "EaseOut",
 	fade_out_duration_ms = 75,
 }
-config.colors = { visual_bell = "#292e42" }
+config.colors = { visual_bell = "#313244" }
 
 -- ---------------------------------------------------------------------------
 -- tabs

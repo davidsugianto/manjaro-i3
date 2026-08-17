@@ -1,0 +1,112 @@
+{
+  "$schema": "https://raw.githubusercontent.com/earendil-works/coding-agent/main/src/modes/interactive/theme/theme-schema.json",
+  "name": "ember",
+
+  "//": "Ember — warm amber accent on a deep charcoal that's tinted toward the brand hue, not toward generic warmth. Inspired by terminal-native tools but with its own neutral ramp + syntax palette. For users who like an OpenCode-adjacent feel without the copy.",
+
+  "vars": {
+    "_layer0":      "#0f0e0c",
+    "_layer1":      "#15130f",
+    "_layer2":      "#1a1814",
+    "_layer3":      "#211e18",
+    "_layerSelect": "#2a261d",
+
+    "_text":        "#ece6d8",
+    "_textStrong":  "#f7f1e2",
+    "_muted":       "#a89c83",
+    "_dim":         "#7a7060",
+    "_dimmer":      "#3d362b",
+    "_dimmest":     "#241f18",
+
+    "_amber":       "#f59e0b",
+    "_amberBright": "#fbbf24",
+    "_amberDeep":   "#d97706",
+    "_amberDim":    "#92400e",
+
+    "_sage":        "#a7d49b",
+    "_coral":       "#f87171",
+    "_warn":        "#fcd34d",
+
+    "_userTint":    "#16140f",
+    "_toolBg":      "#1a1814",
+    "_toolOk":      "#1a2218",
+    "_toolErr":     "#251818",
+
+    "_kw":          "#fbbf24",
+    "_fn":          "#fde68a",
+    "_str":         "#a7d49b",
+    "_num":         "#fb923c",
+    "_type":        "#fcd34d",
+    "_var":         "#ece6d8",
+    "_op":          "#a89c83"
+  },
+
+  "colors": {
+    "accent":           "_amber",
+    "border":           "_dimmer",
+    "borderAccent":     "_amberDeep",
+    "borderMuted":      "_dimmest",
+
+    "success":          "_sage",
+    "error":            "_coral",
+    "warning":          "_warn",
+
+    "muted":            "_muted",
+    "dim":              "_dim",
+    "text":             "_text",
+    "thinkingText":     "_muted",
+
+    "selectedBg":       "_layerSelect",
+    "userMessageBg":    "_userTint",
+    "userMessageText":  "_textStrong",
+    "customMessageBg":  "_layer2",
+    "customMessageText":"_text",
+    "customMessageLabel":"_amberBright",
+
+    "toolPendingBg":    "_toolBg",
+    "toolSuccessBg":    "_toolOk",
+    "toolErrorBg":      "_toolErr",
+    "toolTitle":        "_amberBright",
+    "toolOutput":       "_muted",
+
+    "mdHeading":        "_textStrong",
+    "mdLink":           "_amber",
+    "mdLinkUrl":        "_dim",
+    "mdCode":           "_amberBright",
+    "mdCodeBlock":      "_text",
+    "mdCodeBlockBorder":"_dimmer",
+    "mdQuote":          "_muted",
+    "mdQuoteBorder":    "_amberDim",
+    "mdHr":             "_dimmest",
+    "mdListBullet":     "_amber",
+
+    "toolDiffAdded":    "_sage",
+    "toolDiffRemoved":  "_coral",
+    "toolDiffContext":  "_dim",
+
+    "syntaxComment":    "_dim",
+    "syntaxKeyword":    "_kw",
+    "syntaxFunction":   "_fn",
+    "syntaxVariable":   "_var",
+    "syntaxString":     "_str",
+    "syntaxNumber":     "_num",
+    "syntaxType":       "_type",
+    "syntaxOperator":   "_op",
+    "syntaxPunctuation":"_muted",
+
+    "thinkingOff":      "_dimmest",
+    "thinkingMinimal":  "_dimmer",
+    "thinkingLow":      "_amberDim",
+    "thinkingMedium":   "_amberDeep",
+    "thinkingHigh":     "_amber",
+    "thinkingXhigh":    "_amberBright",
+
+    "bashMode":         "_amberBright"
+  },
+
+  "export": {
+    "pageBg":  "#0f0e0c",
+    "cardBg":  "#15130f",
+    "infoBg":  "#211e18"
+  }
+}

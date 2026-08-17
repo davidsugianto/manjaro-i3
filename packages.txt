@@ -37,6 +37,7 @@ zsh-theme-powerlevel10k
 
 # --- fonts -----------------------------------------------------------------
 ttf-jetbrains-mono-nerd    # main UI + terminal font
+ttf-victor-mono-nerd       # cursive italic face — kitty/wezterm italic_font only
 ttf-nerd-fonts-symbols-mono # glyph fallback for polybar/rofi icons
 noto-fonts
 noto-fonts-emoji

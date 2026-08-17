@@ -209,7 +209,7 @@ ZSH_PLUGIN_DIR=/usr/share/zsh/plugins
 
 # --- autosuggestions: ghost text from history -----------------------------
 if [[ -r $ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#565f89'   # TokyoNight comment colour
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6c7086'   # Catppuccin Mocha overlay0 (comment colour)
     ZSH_AUTOSUGGEST_STRATEGY=(history completion)
     ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20             # don't suggest on huge lines
     source $ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -220,8 +220,8 @@ fi
 # --- history substring search ---------------------------------------------
 if [[ -r $ZSH_PLUGIN_DIR/zsh-history-substring-search/zsh-history-substring-search.zsh ]]; then
     source $ZSH_PLUGIN_DIR/zsh-history-substring-search/zsh-history-substring-search.zsh
-    HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=#283457,fg=#7aa2f7,bold'
-    HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=#f7768e,fg=#1a1b26,bold'
+    HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=#585b70,fg=#89b4fa,bold'
+    HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=#f38ba8,fg=#1e1e2e,bold'
     HISTORY_SUBSTRING_SEARCH_FUZZY=1
     # Type a prefix, then Up/Down walks only matching history entries.
     [[ -n ${key[Up]}   ]] && bindkey -- "${key[Up]}"   history-substring-search-up
@@ -235,20 +235,20 @@ fi
 if [[ -r $ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
     ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
     typeset -A ZSH_HIGHLIGHT_STYLES
-    ZSH_HIGHLIGHT_STYLES[command]='fg=#9ece6a'
-    ZSH_HIGHLIGHT_STYLES[builtin]='fg=#9ece6a'
-    ZSH_HIGHLIGHT_STYLES[function]='fg=#9ece6a'
-    ZSH_HIGHLIGHT_STYLES[alias]='fg=#9ece6a'
-    ZSH_HIGHLIGHT_STYLES[precommand]='fg=#9ece6a,italic'
-    ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#f7768e,bold'
-    ZSH_HIGHLIGHT_STYLES[path]='fg=#c0caf5,underline'
-    ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#e0af68'
-    ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#e0af68'
-    ZSH_HIGHLIGHT_STYLES[comment]='fg=#565f89,italic'
-    ZSH_HIGHLIGHT_STYLES[redirection]='fg=#bb9af7'
-    ZSH_HIGHLIGHT_STYLES[commandseparator]='fg=#bb9af7'
+    ZSH_HIGHLIGHT_STYLES[command]='fg=#a6e3a1'
+    ZSH_HIGHLIGHT_STYLES[builtin]='fg=#a6e3a1'
+    ZSH_HIGHLIGHT_STYLES[function]='fg=#a6e3a1'
+    ZSH_HIGHLIGHT_STYLES[alias]='fg=#a6e3a1'
+    ZSH_HIGHLIGHT_STYLES[precommand]='fg=#a6e3a1,italic'
+    ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#f38ba8,bold'
+    ZSH_HIGHLIGHT_STYLES[path]='fg=#cdd6f4,underline'
+    ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#f9e2af'
+    ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#f9e2af'
+    ZSH_HIGHLIGHT_STYLES[comment]='fg=#6c7086,italic'
+    ZSH_HIGHLIGHT_STYLES[redirection]='fg=#cba6f7'
+    ZSH_HIGHLIGHT_STYLES[commandseparator]='fg=#cba6f7'
     # Highlight `sudo rm -rf /` style footguns in red before you hit enter.
-    ZSH_HIGHLIGHT_PATTERNS+=('rm -rf *' 'fg=#1a1b26,bg=#f7768e,bold')
+    ZSH_HIGHLIGHT_PATTERNS+=('rm -rf *' 'fg=#1e1e2e,bg=#f38ba8,bold')
     source $ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
 
@@ -259,10 +259,10 @@ if [[ -d /usr/share/fzf ]]; then
 
     export FZF_DEFAULT_OPTS="
         --height 45% --layout=reverse --border=rounded --info=inline
-        --color=bg+:#283457,bg:#1a1b26,spinner:#bb9af7,hl:#7aa2f7
-        --color=fg:#c0caf5,header:#7aa2f7,info:#e0af68,pointer:#bb9af7
-        --color=marker:#9ece6a,fg+:#c0caf5,prompt:#7aa2f7,hl+:#7dcfff
-        --color=border:#292e42"
+        --color=bg+:#585b70,bg:#1e1e2e,spinner:#cba6f7,hl:#89b4fa
+        --color=fg:#cdd6f4,header:#89b4fa,info:#f9e2af,pointer:#cba6f7
+        --color=marker:#a6e3a1,fg+:#cdd6f4,prompt:#89b4fa,hl+:#89dceb
+        --color=border:#313244"
 
     if command -v fd >/dev/null; then
         export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
@@ -290,7 +290,7 @@ if [[ -r /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme ]]; then
 elif command -v starship >/dev/null; then
     eval "$(starship init zsh)"
 else
-    # Last-resort builtin prompt, still TokyoNight-coloured.
+    # Last-resort builtin prompt, still Catppuccin Mocha-coloured.
     autoload -Uz vcs_info
     zstyle ':vcs_info:git:*' formats ' %F{magenta}%b%f'
     precmd() { vcs_info }
@@ -324,3 +324,6 @@ if [ -f '/home/maternal/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/ma
 
 # opencode
 export PATH=/home/maternal/.opencode/bin:$PATH
+
+# Pi
+export PATH="/home/maternal/.local/share/pi-node/node-v22.23.2-linux-x64/bin:$PATH"

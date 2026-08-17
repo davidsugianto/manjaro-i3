@@ -146,8 +146,8 @@ The choice is cached in `~/.cache/wallpaper` and restored on login.
 
 ## Changing the theme
 
-TokyoNight is the default; Dracula and Gruvbox ship as alternates. One line per
-program — see `colors/README.md` for the full table.
+Catppuccin Mocha is the default; TokyoNight, Dracula and Gruvbox ship as
+alternates. One line per program — see `colors/README.md` for the full table.
 
 | Program | Edit |
 | --- | --- |

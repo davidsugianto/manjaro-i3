@@ -1,0 +1,205 @@
+/**
+ * halcyon-chrome — production-grade TUI chrome for pi.
+ *
+ * Provides:
+ *   1. A typographic header with keybinding hints.
+ *      — Installed on first agent_end, not session_start, so it
+ *        doesn't stomp the entrance extension's welcome screen.
+ *   2. A dense, calm footer: cwd · @branch | model · tokens · cost.
+ *   3. A breathing braille working indicator.
+ *
+ * Toggle with `/chrome on|off`.
+ */
+
+import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import * as os from "node:os";
+import * as path from "node:path";
+
+const SEP_PAD = ` · `;
+const BRANCH_GLYPH = "@";
+const WORK_FRAMES = ["⠁", "⠉", "⠋", "⠛", "⠟", "⠿", "⠟", "⠛", "⠋", "⠉"];
+
+function shortenCwd(cwd: string): string {
+	const home = os.homedir();
+	let p = cwd;
+	if (p === home) return "~";
+	if (p.startsWith(home + path.sep)) p = "~" + p.slice(home.length);
+	const parts = p.split(path.sep);
+	if (parts.length <= 4) return p;
+	return [parts[0], "…", parts[parts.length - 2], parts[parts.length - 1]]
+		.filter(Boolean)
+		.join(path.sep);
+}
+
+function fmtTokens(n: number): string {
+	if (n < 1000) return `${n}`;
+	if (n < 10_000) return `${(n / 1000).toFixed(1)}k`;
+	if (n < 1_000_000) return `${Math.round(n / 1000)}k`;
+	return `${(n / 1_000_000).toFixed(1)}M`;
+}
+
+function fmtCost(c: number): string {
+	if (c < 0.01) return c === 0 ? "" : `<$0.01`;
+	if (c < 1) return `$${c.toFixed(2)}`;
+	return `$${c.toFixed(2)}`;
+}
+
+function shortModel(id: string): string {
+	return id
+		.replace(/^anthropic\//, "")
+		.replace(/^openai\//, "")
+		.replace(/^litellm\//, "")
+		.replace(/^claude-/, "claude·")
+		.replace(/^gpt-/, "gpt·");
+}
+
+export default function (pi: ExtensionAPI) {
+	let chromeEnabled = true;
+	let headerInstalled = false;
+
+	type Ctx = Parameters<Parameters<ExtensionAPI["on"]>[1]>[1];
+
+	const installHeader = (ctx: Ctx) => {
+		if (!ctx.hasUI || !chromeEnabled) return;
+		ctx.ui.setHeader((_tui, theme) => ({
+			invalidate() {},
+			render(width: number): string[] {
+				try {
+					if (width < 1) return ["", "", "", ""];
+					const brand = theme.fg("accent", theme.bold("pi"));
+					const dot = theme.fg("borderAccent", "•");
+					const tag = theme.fg("muted", "noctilucent");
+					const brandLine = truncateToWidth(`  ${brand}  ${dot}  ${tag}`, width);
+
+					// Keep a stable 4-row header height. Only show the hint row when it
+					// fits — truncating key hints mid-glyph reads worse than omitting them,
+					// and an un-truncated overflow crashes pi's renderer on narrow terminals.
+					const hintText = "  ↵ send  ⇧↵ newline  ⇥ complete  ^l model  ⇧⇥ thinking";
+					const hintLine = visibleWidth(hintText) <= width ? theme.fg("dim", hintText) : "";
+					return ["", brandLine, hintLine, ""];
+				} catch {
+					// A render-loop exception must degrade, never crash the TUI.
+					return ["", "", "", ""];
+				}
+			},
+		}));
+	};
+
+	// Installs the working indicator only.
+	// Must NOT be called during /reload — see session_start handler comment.
+	const installWorkingIndicator = (ctx: Ctx) => {
+		if (!ctx.hasUI || !chromeEnabled) return;
+		ctx.ui.setWorkingIndicator({
+			frames: WORK_FRAMES.map((f) => ctx.ui.theme.fg("accent", f)),
+			intervalMs: 90,
+		});
+	};
+
+	// Installs the custom footer only.
+	const installFooter = (ctx: Ctx) => {
+		if (!ctx.hasUI || !chromeEnabled) return;
+		ctx.ui.setFooter((tui, theme, footerData) => {
+			const unsubBranch = footerData.onBranchChange(() => tui.requestRender());
+			return {
+				dispose: unsubBranch,
+				invalidate() {},
+				render(width: number): string[] {
+					let input = 0, output = 0, cost = 0;
+					for (const e of ctx.sessionManager.getBranch()) {
+						if (e.type === "message" && e.message.role === "assistant") {
+							const m = e.message as AssistantMessage;
+							input += m.usage.input;
+							output += m.usage.output;
+							cost += m.usage.cost.total;
+						}
+					}
+
+					const cwd = shortenCwd(process.cwd());
+					const branch = footerData.getGitBranch();
+
+					const leftParts: string[] = [theme.fg("muted", cwd)];
+					if (branch) {
+						leftParts.push(
+							theme.fg("dim", SEP_PAD) + theme.fg("accent", `${BRANCH_GLYPH}${branch}`),
+						);
+					}
+					const left = leftParts.join("");
+
+					const rightParts: string[] = [];
+					if (ctx.model?.id) rightParts.push(theme.fg("text", shortModel(ctx.model.id)));
+					for (const [, s] of footerData.getExtensionStatuses()) {
+						if (s) rightParts.push(s);
+					}
+					if (input + output > 0) {
+						rightParts.push(theme.fg("dim", `↑${fmtTokens(input)} ↓${fmtTokens(output)}`));
+					}
+					const costStr = fmtCost(cost);
+					if (costStr) rightParts.push(theme.fg("dim", costStr));
+
+					const right = rightParts.join(theme.fg("dim", SEP_PAD));
+					const room = width - visibleWidth(left) - visibleWidth(right) - 2;
+					const gap = room > 0 ? " ".repeat(room) : " ";
+					return [truncateToWidth(` ${left}${gap}${right} `, width)];
+				},
+			};
+		});
+	};
+
+	pi.on("session_start", async (event, ctx) => {
+		if (!chromeEnabled) return;
+		// pi's resetExtensionUI() fires before every session_start (including reload),
+		// which calls setExtensionFooter(undefined) and restores the built-in footer.
+		// So we must always reinstall our custom footer here.
+		//
+		// HOWEVER: on reload we must NOT call setWorkingIndicator().
+		// Calling it stores custom frames in workingIndicatorOptions while the runtime
+		// is still settling after _buildRuntime(). If the agent briefly appears
+		// non-idle at that moment a Loader is created with those frames and — since
+		// no agent_end fires for a no-LLM reload — the spinner runs forever and the
+		// UI hangs. The indicator options are already cleared by resetExtensionUI so
+		// the default spinner is fine until the next real turn.
+		const isReload = (event as any).reason === "reload";
+		headerInstalled = false;
+		installFooter(ctx);
+		if (!isReload) {
+			installWorkingIndicator(ctx);
+		}
+	});
+
+	// Header installs after first turn — entrance has cleared by then
+	pi.on("agent_end", async (_event, ctx) => {
+		if (!chromeEnabled || headerInstalled) return;
+		headerInstalled = true;
+		installHeader(ctx);
+	});
+
+	pi.registerCommand("chrome", {
+		description: "Toggle halcyon-chrome (header / footer / indicator)",
+		handler: async (args, ctx) => {
+			const arg = (args ?? "").trim().toLowerCase();
+
+			if (arg === "off" || (arg === "" && chromeEnabled)) {
+				chromeEnabled = false;
+				ctx.ui.setHeader(undefined);
+				ctx.ui.setFooter(undefined);
+				ctx.ui.setWorkingIndicator();
+				ctx.ui.notify("halcyon-chrome: off", "info");
+				return;
+			}
+
+			if (arg === "on" || (arg === "" && !chromeEnabled)) {
+				chromeEnabled = true;
+				headerInstalled = true;
+				installHeader(ctx);
+				installFooter(ctx);
+				installWorkingIndicator(ctx);
+				ctx.ui.notify("halcyon-chrome: on", "info");
+				return;
+			}
+
+			ctx.ui.notify("Usage: /chrome on|off", "warning");
+		},
+	});
+}

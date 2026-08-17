@@ -1,0 +1,114 @@
+{
+  "$schema": "https://raw.githubusercontent.com/earendil-works/coding-agent/main/src/modes/interactive/theme/theme-schema.json",
+  "name": "vulcan",
+
+  "//": "Vulcan — the forge. Molten orange accent over iron-black layers tinted toward scorched umber. Companion theme to the vulcan chrome extension: its heat ramp (iron → ember → molten → gold → white-hot) is the same one the chrome uses for gauges and frames. Derived from ember.json but pushed hotter: orange core instead of amber, deep-red errors like cooling slag, pale gold for white-hot emphasis.",
+
+  "vars": {
+    "_layer0":      "#0d0b09",
+    "_layer1":      "#14100c",
+    "_layer2":      "#191410",
+    "_layer3":      "#201913",
+    "_layerSelect": "#2b2118",
+
+    "_text":        "#ede4d6",
+    "_textStrong":  "#f8f0df",
+    "_muted":       "#a99a82",
+    "_dim":         "#7b6e5c",
+    "_dimmer":      "#3e352a",
+    "_dimmest":     "#251e16",
+
+    "_molten":      "#f97316",
+    "_moltenHot":   "#fb923c",
+    "_gold":        "#fbbf24",
+    "_goldPale":    "#fde68a",
+    "_emberDeep":   "#ea580c",
+    "_emberDim":    "#9a3412",
+
+    "_sage":        "#a3cf95",
+    "_slag":        "#f87171",
+    "_warn":        "#fcd34d",
+
+    "_userTint":    "#171209",
+    "_toolBg":      "#191410",
+    "_toolOk":      "#1a2117",
+    "_toolErr":     "#261715",
+
+    "_kw":          "#fb923c",
+    "_fn":          "#fde68a",
+    "_str":         "#a3cf95",
+    "_num":         "#f97316",
+    "_type":        "#fcd34d",
+    "_var":         "#ede4d6",
+    "_op":          "#a99a82"
+  },
+
+  "colors": {
+    "accent":           "_molten",
+    "border":           "_dimmer",
+    "borderAccent":     "_emberDeep",
+    "borderMuted":      "_dimmest",
+
+    "success":          "_sage",
+    "error":            "_slag",
+    "warning":          "_warn",
+
+    "muted":            "_muted",
+    "dim":              "_dim",
+    "text":             "_text",
+    "thinkingText":     "_muted",
+
+    "selectedBg":       "_layerSelect",
+    "userMessageBg":    "_userTint",
+    "userMessageText":  "_textStrong",
+    "customMessageBg":  "_layer2",
+    "customMessageText":"_text",
+    "customMessageLabel":"_moltenHot",
+
+    "toolPendingBg":    "_toolBg",
+    "toolSuccessBg":    "_toolOk",
+    "toolErrorBg":      "_toolErr",
+    "toolTitle":        "_moltenHot",
+    "toolOutput":       "_muted",
+
+    "mdHeading":        "_textStrong",
+    "mdLink":           "_molten",
+    "mdLinkUrl":        "_dim",
+    "mdCode":           "_moltenHot",
+    "mdCodeBlock":      "_text",
+    "mdCodeBlockBorder":"_dimmer",
+    "mdQuote":          "_muted",
+    "mdQuoteBorder":    "_emberDim",
+    "mdHr":             "_dimmest",
+    "mdListBullet":     "_molten",
+
+    "toolDiffAdded":    "_sage",
+    "toolDiffRemoved":  "_slag",
+    "toolDiffContext":  "_dim",
+
+    "syntaxComment":    "_dim",
+    "syntaxKeyword":    "_kw",
+    "syntaxFunction":   "_fn",
+    "syntaxVariable":   "_var",
+    "syntaxString":     "_str",
+    "syntaxNumber":     "_num",
+    "syntaxType":       "_type",
+    "syntaxOperator":   "_op",
+    "syntaxPunctuation":"_muted",
+
+    "thinkingOff":      "_dimmest",
+    "thinkingMinimal":  "_dimmer",
+    "thinkingLow":      "_emberDim",
+    "thinkingMedium":   "_emberDeep",
+    "thinkingHigh":     "_molten",
+    "thinkingXhigh":    "_gold",
+
+    "bashMode":         "_moltenHot"
+  },
+
+  "export": {
+    "pageBg":  "#0d0b09",
+    "cardBg":  "#14100c",
+    "infoBg":  "#201913"
+  }
+}

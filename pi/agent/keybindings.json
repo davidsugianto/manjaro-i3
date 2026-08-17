@@ -1,0 +1,8 @@
+{
+  "app.session.new":     ["f5"],
+  "app.session.tree":    ["f6"],
+  "app.session.fork":    ["f7"],
+  "app.session.resume":  ["f8"],
+
+  "tui.editor.deleteWordBackward": ["ctrl+w", "alt+backspace"]
+}
